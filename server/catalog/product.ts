@@ -152,7 +152,7 @@ export async function createProduct(input: z.infer<typeof createProductSchema>) 
     throw new Error('이미 사용 중인 슬러그입니다.');
   }
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const product = await tx.product.create({
       data: {
         categoryId: data.categoryId,
@@ -188,7 +188,7 @@ export async function createProduct(input: z.infer<typeof createProductSchema>) 
         },
         include: { optionValues: true },
       });
-      optionValueMap.push(created.optionValues.map((ov) => ov.id));
+      optionValueMap.push(created.optionValues.map((ov: { id: string }) => ov.id));
     }
 
     // SKU 생성

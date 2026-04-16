@@ -1,10 +1,25 @@
 import { NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/lib/auth/admin';
+import { redis } from '@/lib/cache/redis';
 import { prisma } from '@/lib/db';
+
+const DASHBOARD_CACHE_KEY = 'admin:dashboard';
+const DASHBOARD_CACHE_TTL = 5 * 60; // 5분
 
 export async function GET() {
   await requireAdmin();
+
+  // Redis 캐시 확인
+  const cached = await redis.get<string>(DASHBOARD_CACHE_KEY);
+  if (cached) {
+    try {
+      const parsed = typeof cached === 'string' ? JSON.parse(cached) : cached;
+      return NextResponse.json(parsed);
+    } catch {
+      // 캐시 파싱 실패 시 무시
+    }
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -54,7 +69,7 @@ export async function GET() {
     take: 10,
   });
 
-  return NextResponse.json({
+  const responseData = {
     summary: {
       todayOrders,
       todayRevenue: todayRevenue._sum.totalAmount ?? 0,
@@ -65,5 +80,12 @@ export async function GET() {
       lowStockCount,
     },
     recentOrders,
+  };
+
+  // Redis 캐시 저장 (5분)
+  await redis.set(DASHBOARD_CACHE_KEY, JSON.stringify(responseData), {
+    ex: DASHBOARD_CACHE_TTL,
   });
+
+  return NextResponse.json(responseData);
 }

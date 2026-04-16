@@ -55,7 +55,7 @@ export async function requestRefund(userId: string, input: z.infer<typeof reques
 }
 
 export async function approveRefund(refundId: string) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const refund = await tx.refund.findUnique({
       where: { id: refundId },
       include: { order: { include: { payment: true, items: true } } },

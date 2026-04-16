@@ -70,7 +70,7 @@ export default async function HomePage() {
       <section className="bg-muted/30 border-b">
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            {categories.map((cat) => (
+            {categories.map((cat: { id: string; slug: string; name: string }) => (
               <Link
                 key={cat.id}
                 href={`/categories/${cat.slug}`}
@@ -106,7 +106,7 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {newProducts.map((product) => {
+          {newProducts.map((product: { id: string; slug: string; name: string; images: { url: string }[]; salePrice: number | null; basePrice: number; category: { name: string } }) => {
             const image = product.images[0];
             const displayPrice = product.salePrice ?? product.basePrice;
             const isOnSale = product.salePrice !== null && product.salePrice < product.basePrice;
@@ -194,7 +194,7 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold">추천 상품</h2>
           <p className="text-muted-foreground mt-1 text-sm">MD가 엄선한 인기 상품</p>
           <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {featuredProducts.map((product) => (
+            {featuredProducts.map((product: { id: string; slug: string; name: string; images: { url: string }[]; salePrice: number | null; basePrice: number }) => (
               <Link key={product.id} href={`/products/${product.slug}`} className="group">
                 <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
                   {product.images[0] ? (

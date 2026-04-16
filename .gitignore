@@ -41,3 +41,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# pnpm
+/.pnpm-store/
+
+# claude
+.claude/worktrees/
+
+# generated docs
+*.pdf
+
+# lock files (use pnpm-lock.yaml)
+package-lock.json

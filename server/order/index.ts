@@ -57,7 +57,7 @@ export async function createOrder(userId: string, input: z.infer<typeof createOr
   const data = createOrderSchema.parse(input);
 
   return withLock(`order:${userId}`, async () => {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       // 1. SKU + 재고 조회 & 검증
       let subtotal = 0;
       const orderItems: Array<{
@@ -89,7 +89,7 @@ export async function createOrder(userId: string, input: z.infer<typeof createOr
 
         const optionText =
           sku.optionValues
-            .map((sov) => `${sov.optionValue.productOption.name}: ${sov.optionValue.value}`)
+            .map((sov: { optionValue: { productOption: { name: string }; value: string } }) => `${sov.optionValue.productOption.name}: ${sov.optionValue.value}`)
             .join(' / ') || undefined;
 
         const totalPrice = sku.price * item.quantity;
@@ -225,7 +225,7 @@ export async function confirmOrder(
   },
 ) {
   return withLock(`order-confirm:${orderId}`, async () => {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
         include: { items: true, payment: true },
@@ -294,7 +294,7 @@ export async function confirmOrder(
 
 export async function cancelOrder(orderId: string, userId: string) {
   return withLock(`order-cancel:${orderId}`, async () => {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
         include: { items: true, payment: true },

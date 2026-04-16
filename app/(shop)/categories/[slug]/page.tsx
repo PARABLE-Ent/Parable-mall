@@ -16,7 +16,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = await prisma.category.findUnique({ where: { slug } });
   if (!category) return { title: '카테고리를 찾을 수 없습니다' };
 
-  return { title: category.name };
+  return {
+    title: category.name,
+    openGraph: {
+      title: category.name,
+      ...(category.imageUrl && { images: [{ url: category.imageUrl }] }),
+    },
+  };
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
@@ -43,14 +49,28 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     sort,
   });
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '홈', item: '/' },
+      { '@type': 'ListItem', position: 2, name: category.name },
+    ],
+  };
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold">{category.name}</h1>
 
       {/* 하위 카테고리 */}
       {category.children.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
-          {category.children.map((child) => (
+          {category.children.map((child: { id: string; slug: string; name: string }) => (
             <Link
               key={child.id}
               href={`/categories/${child.slug}`}
@@ -84,7 +104,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
       {/* 상품 그리드 */}
       <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {products.map((product) => {
+        {products.map((product: { id: string; slug: string; name: string; images: { url: string }[]; salePrice: number | null; basePrice: number; status: string; category: { name: string }; _count: { reviews: number } }) => {
           const image = product.images[0];
           const displayPrice = product.salePrice ?? product.basePrice;
 
@@ -97,6 +117,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                     alt={product.name}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"
+                    loading="lazy"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
                 )}
                 {product.status === 'SOLDOUT' && (
@@ -144,5 +166,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       )}
     </div>
+    </>
   );
 }

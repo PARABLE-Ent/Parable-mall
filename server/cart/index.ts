@@ -72,7 +72,7 @@ export async function addToCart(userId: string, input: z.infer<typeof addToCartS
 
   const cart = await getCart(userId);
 
-  const existingItem = cart.items.find((item) => item.skuId === skuId);
+  const existingItem = cart.items.find((item: { skuId: string; id: string; quantity: number }) => item.skuId === skuId);
 
   if (existingItem) {
     return prisma.cartItem.update({
@@ -94,7 +94,7 @@ export async function updateCartItem(
   const { quantity } = updateCartItemSchema.parse(input);
 
   const cart = await getCart(userId);
-  const item = cart.items.find((i) => i.id === itemId);
+  const item = cart.items.find((i: { id: string }) => i.id === itemId);
   if (!item) throw new Error('장바구니 항목을 찾을 수 없습니다.');
 
   return prisma.cartItem.update({
@@ -105,7 +105,7 @@ export async function updateCartItem(
 
 export async function removeCartItem(userId: string, itemId: string) {
   const cart = await getCart(userId);
-  const item = cart.items.find((i) => i.id === itemId);
+  const item = cart.items.find((i: { id: string }) => i.id === itemId);
   if (!item) throw new Error('장바구니 항목을 찾을 수 없습니다.');
 
   return prisma.cartItem.delete({ where: { id: itemId } });
