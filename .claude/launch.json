@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3000,
+      "env": {
+        "DATABASE_URL": "postgresql://parable:parable_dev_password@localhost:5432/parable_mall",
+        "REDIS_URL": "redis://localhost:6379",
+        "NEXTAUTH_URL": "http://localhost:3000",
+        "NEXTAUTH_SECRET": "dev-secret-key-for-local-testing-only-32chars"
+      }
+    }
+  ]
+}

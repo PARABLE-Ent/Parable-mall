@@ -1,0 +1,809 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// 회원 & 인증
+// ============================================================
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum AdminRole {
+  OWNER
+  MANAGER
+  CS
+}
+
+enum GradeLevel {
+  NORMAL
+  SILVER
+  GOLD
+  VIP
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  emailVerified DateTime?
+  name          String?
+  phone         String?
+  password      String?
+  role          UserRole  @default(CUSTOMER)
+  gradeLevel    GradeLevel @default(NORMAL)
+  totalSpent    Int       @default(0) // 누적 구매액 (원 단위)
+
+  accounts       Account[]
+  sessions       Session[]
+  addresses      Address[]
+  cart           Cart?
+  orders         Order[]
+  reviews        Review[]
+  qnas           QnA[]
+  couponIssues   CouponIssue[]
+  pointHistories PointHistory[]
+  wishlistItems  WishlistItem[]
+  notifications  Notification[]
+  marketingConsent MarketingConsent?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  userId     String
+  label      String? // 예: "집", "회사"
+  recipient  String
+  phone      String
+  zipCode    String
+  address1   String  // 기본 주소 (다음 주소 API)
+  address2   String? // 상세 주소
+  isDefault  Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("addresses")
+}
+
+// ============================================================
+// 운영자
+// ============================================================
+
+model AdminUser {
+  id       String    @id @default(cuid())
+  email    String    @unique
+  name     String
+  password String
+  role     AdminRole @default(CS)
+  isActive Boolean   @default(true)
+
+  auditLogs AuditLog[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("admin_users")
+}
+
+model AuditLog {
+  id          String @id @default(cuid())
+  adminUserId String
+  action      String // CREATE, UPDATE, DELETE
+  entity      String // 테이블명
+  entityId    String
+  changes     Json?  // 변경 전/후 데이터
+  ipAddress   String?
+
+  adminUser AdminUser @relation(fields: [adminUserId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([adminUserId])
+  @@map("audit_logs")
+}
+
+// ============================================================
+// 카탈로그
+// ============================================================
+
+model Category {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique
+  parentId String?
+  sortOrder Int    @default(0)
+  isActive Boolean @default(true)
+  imageUrl String?
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("categories")
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  SOLDOUT
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  categoryId  String
+  name        String
+  slug        String        @unique
+  description String?       // 짧은 설명
+  content     String?       // 상세 설명 (HTML/에디터 컨텐츠)
+  status      ProductStatus @default(DRAFT)
+  isFeatured  Boolean       @default(false)
+  tags        String[]      // PostgreSQL 배열
+
+  // 가격 (옵션 없는 단일 상품용 기본 가격)
+  basePrice    Int // 정가 (원)
+  salePrice    Int? // 할인가 (원)
+  costPrice    Int? // 원가 (원)
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  category      Category       @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  options       ProductOption[]
+  skus          Sku[]
+  reviews       Review[]
+  qnas          QnA[]
+  wishlistItems WishlistItem[]
+  restockAlerts RestockAlert[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int    @default(0)
+  isPrimary Boolean @default(false)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("product_images")
+}
+
+model ProductOption {
+  id        String @id @default(cuid())
+  productId String
+  name      String // 예: "사이즈", "색상"
+  sortOrder Int    @default(0)
+
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValues OptionValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("product_options")
+}
+
+model OptionValue {
+  id              String @id @default(cuid())
+  productOptionId String
+  value           String // 예: "M", "블랙"
+  sortOrder       Int    @default(0)
+
+  productOption ProductOption @relation(fields: [productOptionId], references: [id], onDelete: Cascade)
+  skuOptionValues SkuOptionValue[]
+
+  createdAt DateTime @default(now())
+
+  @@index([productOptionId])
+  @@map("option_values")
+}
+
+// SKU = 옵션 조합별 재고 단위
+model Sku {
+  id        String @id @default(cuid())
+  productId String
+  skuCode   String @unique // 예: "PROD-001-M-BLK"
+  price     Int    // 해당 옵션 조합의 가격 (원)
+  isActive  Boolean @default(true)
+
+  product        Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValues   SkuOptionValue[]
+  inventory      Inventory?
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("skus")
+}
+
+model SkuOptionValue {
+  id            String @id @default(cuid())
+  skuId         String
+  optionValueId String
+
+  sku         Sku         @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  optionValue OptionValue @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+
+  @@unique([skuId, optionValueId])
+  @@map("sku_option_values")
+}
+
+model Inventory {
+  id       String @id @default(cuid())
+  skuId    String @unique
+  quantity Int    @default(0)
+  reserved Int    @default(0) // 결제 진행 중 예약된 수량
+
+  sku Sku @relation(fields: [skuId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("inventories")
+}
+
+model RestockAlert {
+  id        String @id @default(cuid())
+  productId String
+  email     String
+  isNotified Boolean @default(false)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("restock_alerts")
+}
+
+model WishlistItem {
+  id        String @id @default(cuid())
+  userId    String
+  productId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+// ============================================================
+// 장바구니
+// ============================================================
+
+model Cart {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  updatedAt DateTime @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id       String @id @default(cuid())
+  cartId   String
+  skuId    String
+  quantity Int    @default(1)
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  sku  Sku  @relation(fields: [skuId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, skuId])
+  @@map("cart_items")
+}
+
+// ============================================================
+// 주문 & 결제
+// ============================================================
+
+enum OrderStatus {
+  PENDING_PAYMENT  // 결제 대기
+  PAID             // 결제 완료
+  PREPARING        // 상품 준비 중
+  SHIPPING         // 배송 중
+  DELIVERED        // 배송 완료
+  CONFIRMED        // 구매 확정
+  CANCEL_REQUESTED // 취소 요청
+  CANCELLED        // 취소 완료
+  RETURN_REQUESTED // 반품 요청
+  RETURNED         // 반품 완료
+  EXCHANGE_REQUESTED // 교환 요청
+  EXCHANGED        // 교환 완료
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique // 주문번호 (예: ORD-20250415-XXXX)
+  userId      String
+  addressId   String?
+  status      OrderStatus @default(PENDING_PAYMENT)
+
+  // 금액 (모두 원 단위 정수)
+  subtotal      Int // 상품 합계
+  shippingFee   Int @default(0)
+  discountTotal Int @default(0) // 쿠폰 + 적립금 할인 합계
+  totalAmount   Int // 최종 결제액
+
+  // 쿠폰/적립금
+  couponIssueId String?
+  pointsUsed    Int @default(0) // 사용한 적립금
+
+  // 배송 정보 (주소 스냅샷)
+  recipientName  String?
+  recipientPhone String?
+  zipCode        String?
+  shippingAddress1 String?
+  shippingAddress2 String?
+  shippingMemo   String?
+
+  user        User         @relation(fields: [userId], references: [id])
+  address     Address?     @relation(fields: [addressId], references: [id])
+  couponIssue CouponIssue? @relation(fields: [couponIssueId], references: [id])
+  items       OrderItem[]
+  payment     Payment?
+  shipments   Shipment[]
+  refunds     Refund[]
+  exchanges   Exchange[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  skuId     String
+  productName String // 주문 시점 스냅샷
+  optionText  String? // "사이즈: M / 색상: 블랙"
+  quantity  Int
+  unitPrice Int // 개당 가격 (원)
+  totalPrice Int // quantity * unitPrice
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sku   Sku   @relation(fields: [skuId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+enum PaymentMethod {
+  CARD
+  VIRTUAL_ACCOUNT
+  BANK_TRANSFER
+  KAKAO_PAY
+  NAVER_PAY
+  TOSS_PAY
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIAL_REFUNDED
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String        @unique
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  amount        Int           // 결제 금액 (원)
+  paymentKey    String?       // PG사 결제 키 (토스페이먼츠)
+  transactionId String?       // PG사 거래 ID
+  receiptUrl    String?       // 영수증 URL
+  paidAt        DateTime?
+  failReason    String?
+  rawResponse   Json?         // PG 응답 원본
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payments")
+}
+
+model Shipment {
+  id          String  @id @default(cuid())
+  orderId     String
+  carrier     String? // 배송사 (CJ대한통운, 로젠 등)
+  trackingNo  String? // 송장번호
+  trackingUrl String? // 스마트택배 조회 URL
+  status      String  @default("PENDING") // PENDING, SHIPPED, IN_TRANSIT, DELIVERED
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shipments")
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+}
+
+model Refund {
+  id        String       @id @default(cuid())
+  orderId   String
+  status    RefundStatus @default(REQUESTED)
+  reason    String
+  amount    Int          // 환불 금액 (원)
+  refundKey String?      // PG 환불 키
+  processedAt DateTime?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("refunds")
+}
+
+enum ExchangeStatus {
+  REQUESTED
+  APPROVED
+  SHIPPING_RETURN
+  RECEIVED
+  SHIPPING_NEW
+  COMPLETED
+  REJECTED
+}
+
+model Exchange {
+  id          String         @id @default(cuid())
+  orderId     String
+  status      ExchangeStatus @default(REQUESTED)
+  reason      String
+  fromSkuId   String?        // 기존 SKU
+  toSkuId     String?        // 교환 SKU
+  processedAt DateTime?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("exchanges")
+}
+
+// ============================================================
+// 리뷰 & Q&A
+// ============================================================
+
+model Review {
+  id        String @id @default(cuid())
+  userId    String
+  productId String
+  orderId   String? // 구매 인증용
+  rating    Int     // 1~5
+  content   String
+  isPhotoReview Boolean @default(false)
+  isVerified    Boolean @default(false) // 구매 인증 리뷰 여부
+  isVisible     Boolean @default(true)
+  reportCount   Int     @default(0)
+
+  user    User          @relation(fields: [userId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+  images  ReviewImage[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([productId])
+  @@index([userId])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id       String @id @default(cuid())
+  reviewId String
+  url      String
+  sortOrder Int   @default(0)
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("review_images")
+}
+
+model QnA {
+  id        String  @id @default(cuid())
+  userId    String
+  productId String
+  question  String
+  answer    String?
+  isSecret  Boolean @default(false)
+  isAnswered Boolean @default(false)
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([productId])
+  @@map("qnas")
+}
+
+// ============================================================
+// 쿠폰 & 프로모션
+// ============================================================
+
+enum DiscountType {
+  FIXED_AMOUNT  // 정액 할인
+  PERCENTAGE    // 정률 할인
+}
+
+model Coupon {
+  id             String       @id @default(cuid())
+  name           String
+  code           String?      @unique // null이면 자동 발급 쿠폰
+  discountType   DiscountType
+  discountValue  Int          // FIXED: 원, PERCENTAGE: %
+  minOrderAmount Int?         // 최소 주문 금액
+  maxDiscount    Int?         // 최대 할인 금액 (정률 시)
+  categoryId     String?      // 카테고리 한정
+  gradeLevel     GradeLevel?  // 등급 한정
+  totalQuantity  Int?         // 총 발급 수량
+  issuedCount    Int          @default(0)
+  startsAt       DateTime
+  expiresAt      DateTime
+  isActive       Boolean      @default(true)
+
+  issues CouponIssue[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("coupons")
+}
+
+model CouponIssue {
+  id       String    @id @default(cuid())
+  couponId String
+  userId   String
+  usedAt   DateTime?
+  expiresAt DateTime
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  orders Order[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([couponId, userId])
+  @@index([userId, expiresAt])
+  @@map("coupon_issues")
+}
+
+model Promotion {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startsAt    DateTime
+  endsAt      DateTime
+  isActive    Boolean  @default(true)
+  // 타임세일 등 프로모션별 세부 설정은 JSON으로
+  config      Json?
+
+  banners Banner[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("promotions")
+}
+
+model Banner {
+  id          String  @id @default(cuid())
+  promotionId String?
+  title       String
+  imageUrl    String
+  linkUrl     String?
+  position    String  // "main_top", "main_middle", "category" 등
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  startsAt    DateTime?
+  endsAt      DateTime?
+
+  promotion Promotion? @relation(fields: [promotionId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("banners")
+}
+
+// ============================================================
+// 적립금
+// ============================================================
+
+enum PointType {
+  EARN      // 적립
+  USE       // 사용
+  EXPIRE    // 만료
+  CANCEL    // 취소 (사용 취소 시 복원)
+  ADMIN     // 관리자 수동 조정
+}
+
+model PointHistory {
+  id      String    @id @default(cuid())
+  userId  String
+  type    PointType
+  amount  Int       // 양수: 적립, 음수: 사용
+  balance Int       // 변경 후 잔액
+  reason  String    // "상품 구매 적립", "포토리뷰 작성" 등
+  orderId String?   // 관련 주문
+  expiresAt DateTime? // 적립금 만료일
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("point_histories")
+}
+
+// ============================================================
+// 알림 & 마케팅 동의
+// ============================================================
+
+enum NotificationType {
+  ORDER_STATUS
+  DELIVERY
+  PROMOTION
+  RESTOCK
+  REVIEW_REPLY
+  QNA_REPLY
+  POINT
+  COUPON
+}
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  type    NotificationType
+  title   String
+  message String
+  isRead  Boolean          @default(false)
+  linkUrl String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model MarketingConsent {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  emailConsent  Boolean @default(false)
+  smsConsent    Boolean @default(false)
+  pushConsent   Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("marketing_consents")
+}

@@ -1,0 +1,15 @@
+{
+  "common": {
+    "appName": "Parable Mall",
+    "home": "Home",
+    "cart": "Cart",
+    "mypage": "My Page",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "notFound": "Page not found"
+  }
+}
