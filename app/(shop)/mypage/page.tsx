@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  ClipboardList,
-  Heart,
-  Loader2,
-  MapPin,
-  MessageSquare,
-  Ticket,
-  User,
-} from 'lucide-react';
+import { ClipboardList, Heart, Loader2, MapPin, MessageSquare, Ticket, User } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -103,7 +95,7 @@ export default function MyPage() {
             <div>
               <p className="text-muted-foreground text-sm">회원 등급</p>
               <p className="font-medium">
-                <span className="rounded bg-primary/10 px-2 py-0.5 text-sm text-primary">
+                <span className="bg-primary/10 text-primary rounded px-2 py-0.5 text-sm">
                   {GRADE_LABELS[profile.gradeLevel] ?? profile.gradeLevel}
                 </span>
               </p>
@@ -113,7 +105,7 @@ export default function MyPage() {
               <p className="font-medium">{profile.totalSpent.toLocaleString('ko-KR')}원</p>
             </div>
           </div>
-          <div className="mt-4 rounded-lg bg-muted p-4">
+          <div className="bg-muted mt-4 rounded-lg p-4">
             <p className="text-muted-foreground text-sm">적립금</p>
             <p className="text-xl font-bold">{profile.pointsBalance.toLocaleString('ko-KR')}P</p>
           </div>
@@ -124,7 +116,7 @@ export default function MyPage() {
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {quickLinks.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href}>
-            <Card className="transition-colors hover:bg-muted/50">
+            <Card className="hover:bg-muted/50 transition-colors">
               <CardContent className="flex flex-col items-center gap-2 p-6">
                 <Icon className="h-6 w-6" />
                 <span className="text-sm font-medium">{label}</span>

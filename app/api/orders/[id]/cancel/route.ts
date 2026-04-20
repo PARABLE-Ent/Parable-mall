@@ -2,10 +2,7 @@ import { auth } from '@/lib/auth';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
 import { cancelOrder } from '@/server/order';
 
-export async function POST(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return apiError('로그인이 필요합니다.', 401);
   const userId = session.user.id;

@@ -8,10 +8,7 @@ const refundRequestSchema = z.object({
   reason: z.string().min(1).max(500),
 });
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return apiError('로그인이 필요합니다.', 401);
   const userId = session.user.id;

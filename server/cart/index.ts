@@ -72,7 +72,9 @@ export async function addToCart(userId: string, input: z.infer<typeof addToCartS
 
   const cart = await getCart(userId);
 
-  const existingItem = cart.items.find((item: { skuId: string; id: string; quantity: number }) => item.skuId === skuId);
+  const existingItem = cart.items.find(
+    (item: { skuId: string; id: string; quantity: number }) => item.skuId === skuId,
+  );
 
   if (existingItem) {
     return prisma.cartItem.update({

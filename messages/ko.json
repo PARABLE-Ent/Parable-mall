@@ -10,6 +10,121 @@
     "search": "검색",
     "loading": "로딩 중...",
     "error": "오류가 발생했습니다",
-    "notFound": "페이지를 찾을 수 없습니다"
+    "notFound": "페이지를 찾을 수 없습니다",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "delete": "삭제",
+    "edit": "수정",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "retry": "다시 시도",
+    "all": "전체"
+  },
+  "nav": {
+    "categories": "카테고리",
+    "newArrivals": "신상품",
+    "bestSellers": "베스트",
+    "sale": "세일",
+    "brand": "브랜드",
+    "support": "고객센터"
+  },
+  "orderStatus": {
+    "PENDING_PAYMENT": "결제 대기",
+    "PAID": "결제 완료",
+    "PREPARING": "상품 준비 중",
+    "SHIPPING": "배송 중",
+    "DELIVERED": "배송 완료",
+    "CONFIRMED": "구매 확정",
+    "CANCEL_REQUESTED": "취소 요청",
+    "CANCELLED": "주문 취소",
+    "RETURN_REQUESTED": "반품 요청",
+    "RETURNED": "반품 완료",
+    "EXCHANGE_REQUESTED": "교환 요청",
+    "EXCHANGED": "교환 완료"
+  },
+  "paymentMethod": {
+    "CARD": "신용/체크카드",
+    "VIRTUAL_ACCOUNT": "가상계좌",
+    "BANK_TRANSFER": "계좌이체",
+    "KAKAO_PAY": "카카오페이",
+    "NAVER_PAY": "네이버페이",
+    "TOSS_PAY": "토스페이"
+  },
+  "grade": {
+    "NORMAL": "일반",
+    "SILVER": "실버",
+    "GOLD": "골드",
+    "VIP": "VIP"
+  },
+  "shipping": {
+    "free": "무료배송",
+    "fee": "배송비",
+    "threshold": "{amount}원 이상 무료배송"
+  },
+  "refund": {
+    "policyPeriod": "수령 후 {days}일 이내 반품 가능",
+    "returnFee": "단순변심 왕복 배송비 {amount}원은 고객 부담입니다.",
+    "status": {
+      "REQUESTED": "반품 요청",
+      "APPROVED": "반품 승인",
+      "REJECTED": "반품 거절",
+      "COMPLETED": "환불 완료"
+    }
+  },
+  "auth": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "passwordConfirm": "비밀번호 확인",
+    "name": "이름",
+    "phone": "휴대폰 번호",
+    "loginFailed": "이메일 또는 비밀번호가 올바르지 않습니다.",
+    "signupSuccess": "회원가입이 완료되었습니다.",
+    "forgotPassword": "비밀번호 찾기",
+    "resetSent": "등록된 이메일로 재설정 링크를 보냈습니다.",
+    "resetSuccess": "비밀번호가 변경되었습니다. 다시 로그인해주세요.",
+    "rateLimited": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+  },
+  "error": {
+    "unknown": "알 수 없는 오류가 발생했습니다.",
+    "unauthorized": "로그인이 필요합니다.",
+    "forbidden": "권한이 없습니다.",
+    "notFound": "요청한 리소스를 찾을 수 없습니다.",
+    "validation": "입력값이 올바르지 않습니다.",
+    "rateLimited": "요청이 너무 많습니다.",
+    "network": "네트워크 오류가 발생했습니다.",
+    "serverError": "서버 오류가 발생했습니다."
+  },
+  "cart": {
+    "empty": "장바구니가 비어 있습니다.",
+    "continue": "쇼핑 계속하기",
+    "subtotal": "상품 합계",
+    "discount": "할인",
+    "shippingFee": "배송비",
+    "total": "결제 예정 금액",
+    "checkout": "주문하기"
+  },
+  "checkout": {
+    "recipient": "받는 분",
+    "recipientPhone": "연락처",
+    "address": "배송지",
+    "addressSearch": "주소 검색",
+    "shippingMemo": "배송 메모",
+    "coupon": "쿠폰 적용",
+    "points": "적립금 사용",
+    "paymentMethod": "결제 수단",
+    "agree": "주문 내용을 확인하였으며, 결제에 동의합니다.",
+    "payNow": "결제하기",
+    "processing": "결제 처리 중..."
+  },
+  "review": {
+    "rating": "평점",
+    "content": "리뷰 내용",
+    "photo": "사진 첨부",
+    "submit": "리뷰 등록",
+    "thanks": "리뷰가 등록되었습니다."
   }
 }

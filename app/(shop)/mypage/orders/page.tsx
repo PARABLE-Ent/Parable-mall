@@ -79,19 +79,31 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/orders?page=${page}&limit=10`)
-      .then((r) => r.json())
-      .then((res: { data: Order[] | null; pagination?: Pagination; error?: string }) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/orders?page=${page}&limit=10`);
+        const res = (await r.json()) as {
+          data: Order[] | null;
+          pagination?: Pagination;
+          error?: string;
+        };
+        if (cancelled) return;
         if (res.error) {
           setError(res.error);
         } else if (res.data) {
           setOrders(res.data);
           if (res.pagination) setPagination(res.pagination);
         }
-      })
-      .catch(() => setError('주문 목록을 불러오는데 실패했습니다.'))
-      .finally(() => setLoading(false));
+      } catch {
+        if (!cancelled) setError('주문 목록을 불러오는데 실패했습니다.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [page]);
 
   if (loading) {
@@ -132,7 +144,7 @@ export default function OrdersPage() {
         <div className="mt-6 space-y-4">
           {orders.map((order) => (
             <Link key={order.id} href={`/mypage/orders/${order.id}`}>
-              <Card className="transition-colors hover:bg-muted/50">
+              <Card className="hover:bg-muted/50 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -155,9 +167,7 @@ export default function OrdersPage() {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">
-                        {order.totalAmount.toLocaleString('ko-KR')}원
-                      </p>
+                      <p className="font-bold">{order.totalAmount.toLocaleString('ko-KR')}원</p>
                     </div>
                   </div>
                 </CardContent>

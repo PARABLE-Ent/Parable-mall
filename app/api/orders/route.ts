@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth';
+import { orderRateLimit } from '@/lib/cache/rate-limit';
 import { prisma } from '@/lib/db';
 import {
   apiError,
@@ -45,6 +46,11 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) return apiError('로그인이 필요합니다.', 401);
 
+  const rl = await orderRateLimit(session.user.id);
+  if (!rl.success) {
+    return apiError('주문 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.', 429);
+  }
+
   const body = await request.json();
   const parsed = createOrderSchema.safeParse(body);
   if (!parsed.success) {
@@ -52,8 +58,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = await createOrder(session.user.id, parsed.data);
-    return apiSuccess(order, 201);
+    const { order, paymentExpiresAt } = await createOrder(session.user.id, parsed.data);
+    return apiSuccess({ ...order, paymentExpiresAt }, 201);
   } catch (e) {
     const message = e instanceof Error ? e.message : '주문 생성에 실패했습니다.';
     return apiError(message, 400);

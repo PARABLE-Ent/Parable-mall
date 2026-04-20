@@ -219,7 +219,7 @@ export default function OrderDetailPage() {
       </div>
 
       {actionMessage && (
-        <div className="mt-4 rounded-lg border bg-muted p-3 text-sm">{actionMessage}</div>
+        <div className="bg-muted mt-4 rounded-lg border p-3 text-sm">{actionMessage}</div>
       )}
 
       {/* Order Info */}
@@ -235,9 +235,7 @@ export default function OrderDetailPage() {
             </div>
             <div>
               <p className="text-muted-foreground text-sm">주문일시</p>
-              <p className="font-medium">
-                {new Date(order.createdAt).toLocaleString('ko-KR')}
-              </p>
+              <p className="font-medium">{new Date(order.createdAt).toLocaleString('ko-KR')}</p>
             </div>
             <div>
               <p className="text-muted-foreground text-sm">주문 상태</p>
@@ -263,6 +261,7 @@ export default function OrderDetailPage() {
               return (
                 <div key={item.id} className="flex gap-4 border-b pb-4 last:border-0 last:pb-0">
                   {imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={imageUrl}
                       alt={item.productName}
@@ -408,7 +407,7 @@ export default function OrderDetailPage() {
                     <span className="text-sm font-medium">
                       {refund.amount.toLocaleString('ko-KR')}원
                     </span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                    <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
                       {REFUND_STATUS_LABELS[refund.status] ?? refund.status}
                     </span>
                   </div>

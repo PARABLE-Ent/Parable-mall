@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { withLock } from '@/lib/cache/lock';
@@ -37,7 +38,7 @@ export async function createCoupon(input: z.infer<typeof createCouponSchema>) {
 export async function issueCouponToUser(couponId: string, userId: string) {
   // 분산 락으로 수량 초과 발급 방지
   return withLock(`coupon-issue:${couponId}`, async () => {
-    return prisma.$transaction(async (tx: any) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const coupon = await tx.coupon.findUnique({ where: { id: couponId } });
       if (!coupon || !coupon.isActive) throw new Error('유효하지 않은 쿠폰입니다.');
       if (coupon.expiresAt < new Date()) throw new Error('만료된 쿠폰입니다.');

@@ -56,6 +56,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+      # 커버리지는 PR 마다 리포트로 수집하되 실패 여부는 임계값으로 추후 조정.
+      - name: Coverage (non-blocking)
+        continue-on-error: true
+        run: pnpm test:coverage
 
   build:
     name: Build

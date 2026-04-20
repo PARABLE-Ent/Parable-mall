@@ -1,18 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  AlertTriangle,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Truck,
-} from 'lucide-react';
+import { AlertTriangle, RefreshCw, ChevronLeft, ChevronRight, Truck } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { adminFetch } from '@/lib/auth/admin-fetch';
 
 interface OrderItem {
   productName: string;
@@ -108,7 +103,7 @@ export default function AdminOrdersPage() {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+      const res = await adminFetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -127,10 +122,10 @@ export default function AdminOrdersPage() {
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}/shipment`, {
+      const res = await adminFetch(`/api/admin/orders/${orderId}/shipment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ carrier, trackingNumber: trackingNo }),
+        body: JSON.stringify({ carrier, trackingNo }),
       });
       if (!res.ok) throw new Error('배송 등록에 실패했습니다.');
       setShipmentOrderId(null);
@@ -206,7 +201,7 @@ export default function AdminOrdersPage() {
                 <tr className="text-muted-foreground border-b text-left">
                   <th className="px-4 py-3 font-medium">주문번호</th>
                   <th className="px-4 py-3 font-medium">고객명</th>
-                  <th className="px-4 py-3 font-medium text-right">총금액</th>
+                  <th className="px-4 py-3 text-right font-medium">총금액</th>
                   <th className="px-4 py-3 font-medium">상태</th>
                   <th className="px-4 py-3 font-medium">날짜</th>
                   <th className="px-4 py-3 font-medium">관리</th>
@@ -248,9 +243,7 @@ export default function AdminOrdersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() =>
-                            setShipmentOrderId(
-                              shipmentOrderId === order.id ? null : order.id
-                            )
+                            setShipmentOrderId(shipmentOrderId === order.id ? null : order.id)
                           }
                         >
                           <Truck className="mr-1 h-3 w-3" />

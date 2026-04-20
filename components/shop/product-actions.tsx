@@ -40,7 +40,6 @@ interface ProductActionsProps {
 }
 
 export function ProductActions({
-  productSlug,
   basePrice,
   salePrice,
   options,
@@ -81,13 +80,10 @@ export function ProductActions({
     : 0;
   const isOutOfStock = matchedSku ? availableStock <= 0 || !matchedSku.isActive : !hasStock;
 
-  const handleOptionSelect = useCallback(
-    (optionId: string, valueId: string) => {
-      setSelectedOptions((prev) => ({ ...prev, [optionId]: valueId }));
-      setMessage(null);
-    },
-    [],
-  );
+  const handleOptionSelect = useCallback((optionId: string, valueId: string) => {
+    setSelectedOptions((prev) => ({ ...prev, [optionId]: valueId }));
+    setMessage(null);
+  }, []);
 
   const handleQuantityChange = useCallback(
     (delta: number) => {

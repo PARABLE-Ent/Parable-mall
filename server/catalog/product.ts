@@ -152,7 +152,7 @@ export async function createProduct(input: z.infer<typeof createProductSchema>) 
     throw new Error('이미 사용 중인 슬러그입니다.');
   }
 
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const product = await tx.product.create({
       data: {
         categoryId: data.categoryId,

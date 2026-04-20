@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { adminFetch } from '@/lib/auth/admin-fetch';
 import {
   Eye,
   EyeOff,
@@ -43,9 +44,7 @@ function StarRating({ rating }: { rating: number }) {
         <Star
           key={i}
           className={`h-3 w-3 ${
-            i < rating
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300 dark:text-gray-600'
+            i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 dark:text-gray-600'
           }`}
         />
       ))}
@@ -85,16 +84,14 @@ export default function AdminReviewsPage() {
   const handleToggleVisibility = async (reviewId: string, currentVisibility: boolean) => {
     setTogglingId(reviewId);
     try {
-      const res = await fetch(`/api/admin/reviews/${reviewId}`, {
+      const res = await adminFetch(`/api/admin/reviews/${reviewId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isVisible: !currentVisibility }),
       });
       if (!res.ok) throw new Error('리뷰 상태 변경에 실패했습니다.');
       setReviews((prev) =>
-        prev.map((r) =>
-          r.id === reviewId ? { ...r, isVisible: !currentVisibility } : r
-        )
+        prev.map((r) => (r.id === reviewId ? { ...r, isVisible: !currentVisibility } : r)),
       );
     } catch (err) {
       alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
@@ -203,9 +200,7 @@ export default function AdminReviewsPage() {
                           variant="ghost"
                           size="sm"
                           disabled={togglingId === review.id}
-                          onClick={() =>
-                            void handleToggleVisibility(review.id, review.isVisible)
-                          }
+                          onClick={() => void handleToggleVisibility(review.id, review.isVisible)}
                         >
                           {review.isVisible ? (
                             <>

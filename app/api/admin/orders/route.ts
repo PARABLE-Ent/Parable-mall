@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
-import { requireAdmin } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 import { prisma } from '@/lib/db';
 
 const orderStatusEnum = z.enum([
@@ -29,7 +29,8 @@ const querySchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  await requireAdmin();
+  const ctx = await requireAdminApi(request);
+  if (ctx instanceof NextResponse) return ctx;
 
   const { searchParams } = request.nextUrl;
   const parsed = querySchema.safeParse({

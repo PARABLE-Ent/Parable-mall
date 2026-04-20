@@ -103,9 +103,7 @@ export default function WishlistPage() {
           </Button>
         </Link>
         <h1 className="text-2xl font-bold">위시리스트</h1>
-        {pagination && (
-          <span className="text-muted-foreground text-sm">({pagination.total})</span>
-        )}
+        {pagination && <span className="text-muted-foreground text-sm">({pagination.total})</span>}
       </div>
 
       {items.length === 0 ? (
@@ -114,9 +112,7 @@ export default function WishlistPage() {
             <Heart className="text-muted-foreground h-12 w-12" />
             <div className="text-center">
               <p className="font-medium">위시리스트가 비어있습니다</p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                마음에 드는 상품을 찜해보세요.
-              </p>
+              <p className="text-muted-foreground mt-1 text-sm">마음에 드는 상품을 찜해보세요.</p>
             </div>
             <Link href="/">
               <Button variant="outline">쇼핑하러 가기</Button>
@@ -130,14 +126,14 @@ export default function WishlistPage() {
               const imageUrl = item.product.images[0]?.url;
               const price = item.product.salePrice ?? item.product.listPrice;
               const hasDiscount =
-                item.product.salePrice !== null &&
-                item.product.salePrice < item.product.listPrice;
+                item.product.salePrice !== null && item.product.salePrice < item.product.listPrice;
 
               return (
                 <Card key={item.id} className="overflow-hidden">
                   <Link href={`/products/${item.product.slug}`}>
                     <div className="bg-muted aspect-square">
                       {imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={imageUrl}
                           alt={item.product.name}

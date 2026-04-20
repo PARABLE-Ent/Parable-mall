@@ -21,24 +21,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     select: { slug: true, updatedAt: true },
   });
 
-  const categoryPages: MetadataRoute.Sitemap = categories.map((cat: { slug: string; updatedAt: Date }) => ({
-    url: `${BASE_URL}/categories/${cat.slug}`,
-    lastModified: cat.updatedAt,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
+  const categoryPages: MetadataRoute.Sitemap = categories.map(
+    (cat: { slug: string; updatedAt: Date }) => ({
+      url: `${BASE_URL}/categories/${cat.slug}`,
+      lastModified: cat.updatedAt,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }),
+  );
 
   const products = await prisma.product.findMany({
     where: { deletedAt: null, status: 'ACTIVE' },
     select: { slug: true, updatedAt: true },
   });
 
-  const productPages: MetadataRoute.Sitemap = products.map((prod: { slug: string; updatedAt: Date }) => ({
-    url: `${BASE_URL}/products/${prod.slug}`,
-    lastModified: prod.updatedAt,
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  }));
+  const productPages: MetadataRoute.Sitemap = products.map(
+    (prod: { slug: string; updatedAt: Date }) => ({
+      url: `${BASE_URL}/products/${prod.slug}`,
+      lastModified: prod.updatedAt,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    }),
+  );
 
   return [...staticPages, ...categoryPages, ...productPages];
 }

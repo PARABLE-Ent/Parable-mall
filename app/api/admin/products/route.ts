@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin-api';
+import { logAudit } from '@/lib/audit';
 import { createProduct, listProducts } from '@/server/catalog/product';
 import { createProductSchema, productListQuerySchema } from '@/server/catalog/product';
 
 export async function GET(request: NextRequest) {
-  await requireAdmin();
+  const ctx = await requireAdminApi(request);
+  if (ctx instanceof NextResponse) return ctx;
+
   const { searchParams } = request.nextUrl;
 
   const query = productListQuerySchema.safeParse({
@@ -27,7 +30,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const ctx = await requireAdminApi(request);
+  if (ctx instanceof NextResponse) return ctx;
+
   const body = await request.json();
   const parsed = createProductSchema.safeParse(body);
 
@@ -37,6 +42,14 @@ export async function POST(request: Request) {
 
   try {
     const product = await createProduct(parsed.data);
+    await logAudit({
+      adminUserId: ctx.session.adminUser.id,
+      action: 'CREATE',
+      entity: 'Product',
+      entityId: product.id,
+      changes: { name: [null, product.name] },
+      ipAddress: ctx.ip,
+    });
     return NextResponse.json(product, { status: 201 });
   } catch (e) {
     const message = e instanceof Error ? e.message : '상품 생성에 실패했습니다.';

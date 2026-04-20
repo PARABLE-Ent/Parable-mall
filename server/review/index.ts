@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { withLock } from '@/lib/cache/lock';
@@ -52,7 +53,7 @@ export async function createReview(userId: string, input: z.infer<typeof createR
 
   // 적립금 잔액 경쟁조건 방지를 위한 사용자별 락
   const review = await withLock(`user-points:${userId}`, () =>
-    prisma.$transaction(async (tx: any) => {
+    prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const created = await tx.review.create({
         data: {
           userId,

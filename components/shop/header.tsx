@@ -16,25 +16,33 @@ const NAV_LINKS = [
   { href: '/categories/lifestyle', label: '생활용품' },
 ];
 
+function readInitialTheme(): 'light' | 'dark' {
+  if (typeof window === 'undefined') return 'light';
+  try {
+    const stored = window.localStorage?.getItem('theme') as 'light' | 'dark' | null;
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch {
+    // ignore
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => readInitialTheme());
   const pathname = usePathname();
 
-  // 시스템 테마 감지 & 로컬 상태 초기화
+  // 초기 테마를 html 클래스에 반영 (외부 시스템 동기화이므로 effect 가 적합)
   useEffect(() => {
-    const root = document.documentElement;
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const stored = window.localStorage?.getItem('theme') as 'light' | 'dark' | null;
-    const initial = stored ?? (systemDark ? 'dark' : 'light');
-    setTheme(initial);
-    root.classList.toggle('dark', initial === 'dark');
-  }, []);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
 
-  // 경로 변경 시 모바일 메뉴 닫기
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
+  // 경로 변경 시 모바일 메뉴 닫기 (이전 pathname 과 비교하여 불필요한 setState 방지)
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
+    if (mobileMenuOpen) setMobileMenuOpen(false);
+  }
 
   const toggleMenu = useCallback(() => {
     setMobileMenuOpen((prev) => !prev);
@@ -97,11 +105,7 @@ export function Header() {
               className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
               aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
             >
-              {theme === 'light' ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
+              {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
             <Link
               href="/search"

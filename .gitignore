@@ -53,3 +53,7 @@ next-env.d.ts
 
 # lock files (use pnpm-lock.yaml)
 package-lock.json
+
+# local deploy artifacts
+deploy-patch.patch
+import.env

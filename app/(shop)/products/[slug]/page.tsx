@@ -15,7 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProduct(slug);
   if (!product) return { title: '상품을 찾을 수 없습니다' };
 
-  const primaryImage = product.images.find((img: { isPrimary: boolean }) => img.isPrimary) ?? product.images[0];
+  const primaryImage =
+    product.images.find((img: { isPrimary: boolean }) => img.isPrimary) ?? product.images[0];
 
   return {
     title: product.metaTitle ?? product.name,
@@ -23,7 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: product.metaTitle ?? product.name,
       description: product.metaDescription ?? product.description ?? undefined,
-      images: primaryImage ? [{ url: primaryImage.url, alt: primaryImage.alt ?? product.name }] : [],
+      images: primaryImage
+        ? [{ url: primaryImage.url, alt: primaryImage.alt ?? product.name }]
+        : [],
     },
   };
 }
@@ -33,9 +36,11 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const primaryImage = product.images.find((img: { isPrimary: boolean }) => img.isPrimary) ?? product.images[0];
+  const primaryImage =
+    product.images.find((img: { isPrimary: boolean }) => img.isPrimary) ?? product.images[0];
   const hasStock = product.skus.some(
-    (sku: { isActive: boolean; inventory: { quantity: number; reserved: number } | null }) => sku.isActive && sku.inventory && sku.inventory.quantity - sku.inventory.reserved > 0,
+    (sku: { isActive: boolean; inventory: { quantity: number; reserved: number } | null }) =>
+      sku.isActive && sku.inventory && sku.inventory.quantity - sku.inventory.reserved > 0,
   );
 
   // JSON-LD 구조화 데이터
@@ -78,26 +83,36 @@ export default async function ProductDetailPage({ params }: Props) {
   };
 
   // SKU 데이터를 클라이언트에 전달할 수 있도록 직렬화
-  const serializedSkus = product.skus.map((sku: { id: string; price: number; isActive: boolean; optionValues: { optionValue: { id: string } }[]; inventory: { quantity: number; reserved: number } | null }) => ({
-    id: sku.id,
-    price: sku.price,
-    isActive: sku.isActive,
-    optionValues: sku.optionValues.map((sov: { optionValue: { id: string } }) => ({
-      optionValue: { id: sov.optionValue.id },
-    })),
-    inventory: sku.inventory
-      ? { quantity: sku.inventory.quantity, reserved: sku.inventory.reserved }
-      : null,
-  }));
+  const serializedSkus = product.skus.map(
+    (sku: {
+      id: string;
+      price: number;
+      isActive: boolean;
+      optionValues: { optionValue: { id: string } }[];
+      inventory: { quantity: number; reserved: number } | null;
+    }) => ({
+      id: sku.id,
+      price: sku.price,
+      isActive: sku.isActive,
+      optionValues: sku.optionValues.map((sov: { optionValue: { id: string } }) => ({
+        optionValue: { id: sov.optionValue.id },
+      })),
+      inventory: sku.inventory
+        ? { quantity: sku.inventory.quantity, reserved: sku.inventory.reserved }
+        : null,
+    }),
+  );
 
-  const serializedOptions = product.options.map((opt: { id: string; name: string; optionValues: { id: string; value: string }[] }) => ({
-    id: opt.id,
-    name: opt.name,
-    optionValues: opt.optionValues.map((val: { id: string; value: string }) => ({
-      id: val.id,
-      value: val.value,
-    })),
-  }));
+  const serializedOptions = product.options.map(
+    (opt: { id: string; name: string; optionValues: { id: string; value: string }[] }) => ({
+      id: opt.id,
+      name: opt.name,
+      optionValues: opt.optionValues.map((val: { id: string; value: string }) => ({
+        id: val.id,
+        value: val.value,
+      })),
+    }),
+  );
 
   return (
     <>
@@ -121,10 +136,7 @@ export default async function ProductDetailPage({ params }: Props) {
             </li>
             <li aria-hidden="true">/</li>
             <li>
-              <Link
-                href={`/categories/${product.category.slug}`}
-                className="hover:text-foreground"
-              >
+              <Link href={`/categories/${product.category.slug}`} className="hover:text-foreground">
                 {product.category.name}
               </Link>
             </li>
@@ -222,37 +234,48 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="mt-12 border-t pt-8">
             <h2 className="mb-4 text-xl font-bold">리뷰 ({product._count.reviews})</h2>
             <div className="space-y-4">
-              {product.reviews.map((review: { id: string; rating: number; content: string; user: { name: string }; images: { id: string; url: string }[] }) => (
-                <div key={review.id} className="rounded-lg border p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{review.user.name}</span>
-                    <span className="text-muted-foreground text-sm" aria-label={`${review.rating}점`}>
-                      {'★'.repeat(review.rating)}
-                      {'☆'.repeat(5 - review.rating)}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm">{review.content}</p>
-                  {review.images.length > 0 && (
-                    <div className="mt-2 flex gap-2">
-                      {review.images.map((img: { id: string; url: string }) => (
-                        <div
-                          key={img.id}
-                          className="bg-muted relative h-16 w-16 overflow-hidden rounded"
-                        >
-                          <Image
-                            src={img.url}
-                            alt="리뷰 이미지"
-                            fill
-                            className="object-cover"
-                            sizes="64px"
-                            loading="lazy"
-                          />
-                        </div>
-                      ))}
+              {product.reviews.map(
+                (review: {
+                  id: string;
+                  rating: number;
+                  content: string;
+                  user: { name: string };
+                  images: { id: string; url: string }[];
+                }) => (
+                  <div key={review.id} className="rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{review.user.name}</span>
+                      <span
+                        className="text-muted-foreground text-sm"
+                        aria-label={`${review.rating}점`}
+                      >
+                        {'★'.repeat(review.rating)}
+                        {'☆'.repeat(5 - review.rating)}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <p className="mt-2 text-sm">{review.content}</p>
+                    {review.images.length > 0 && (
+                      <div className="mt-2 flex gap-2">
+                        {review.images.map((img: { id: string; url: string }) => (
+                          <div
+                            key={img.id}
+                            className="bg-muted relative h-16 w-16 overflow-hidden rounded"
+                          >
+                            <Image
+                              src={img.url}
+                              alt="리뷰 이미지"
+                              fill
+                              className="object-cover"
+                              sizes="64px"
+                              loading="lazy"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ),
+              )}
             </div>
           </div>
         )}

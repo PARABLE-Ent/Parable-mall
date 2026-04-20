@@ -153,11 +153,7 @@ export default function AddressesPage() {
           </Link>
           <h1 className="text-2xl font-bold">배송지 관리</h1>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowForm((v) => !v)}
-        >
+        <Button variant="outline" size="sm" onClick={() => setShowForm((v) => !v)}>
           <Plus className="mr-1 h-4 w-4" />
           {showForm ? '닫기' : '새 배송지'}
         </Button>
@@ -281,9 +277,7 @@ export default function AddressesPage() {
             <MapPin className="text-muted-foreground h-12 w-12" />
             <div className="text-center">
               <p className="font-medium">등록된 배송지가 없습니다</p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                새 배송지를 등록해주세요.
-              </p>
+              <p className="text-muted-foreground mt-1 text-sm">새 배송지를 등록해주세요.</p>
             </div>
           </CardContent>
         </Card>
@@ -295,11 +289,9 @@ export default function AddressesPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      {address.label && (
-                        <span className="font-medium">{address.label}</span>
-                      )}
+                      {address.label && <span className="font-medium">{address.label}</span>}
                       {address.isDefault && (
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                        <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
                           기본 배송지
                         </span>
                       )}

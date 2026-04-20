@@ -5,11 +5,15 @@ import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
 import { redis } from '@/lib/cache/redis';
+import { issueAdminCsrfToken, revokeAdminCsrfToken } from '@/lib/auth/csrf';
+import { logger } from '@/lib/logger';
 
 import type { AdminSession } from './types';
 
 const ADMIN_SESSION_PREFIX = 'admin:session:';
 const ADMIN_SESSION_TTL = 8 * 60 * 60; // 8시간
+export const ADMIN_SESSION_COOKIE = 'admin_session';
+export { ADMIN_SESSION_TTL };
 
 const adminLoginSchema = z.object({
   email: z.string().email(),
@@ -53,31 +57,51 @@ export async function adminLogin(
   });
 
   const cookieStore = await cookies();
-  cookieStore.set('admin_session', sessionId, {
+  cookieStore.set(ADMIN_SESSION_COOKIE, sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: ADMIN_SESSION_TTL,
-    path: '/admin',
+    path: '/',
   });
 
+  // CSRF 토큰 발급 (같은 TTL)
+  await issueAdminCsrfToken(sessionId, ADMIN_SESSION_TTL);
+
+  logger.info('admin.login', { adminUserId: admin.id });
   return { success: true };
 }
 
 export async function getAdminSession(): Promise<AdminSession | null> {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get('admin_session')?.value;
+  const sessionId = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 
   const data = await redis.get<string>(`${ADMIN_SESSION_PREFIX}${sessionId}`);
   if (!data) return null;
 
   try {
-    // Upstash는 자동 역직렬화할 수 있으므로 타입에 따라 분기
     const parsed = typeof data === 'string' ? JSON.parse(data) : data;
     return parsed as AdminSession;
   } catch {
     await redis.del(`${ADMIN_SESSION_PREFIX}${sessionId}`);
+    return null;
+  }
+}
+
+export async function getAdminSessionWithId(): Promise<{
+  session: AdminSession;
+  sessionId: string;
+} | null> {
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+  if (!sessionId) return null;
+  const data = await redis.get<string>(`${ADMIN_SESSION_PREFIX}${sessionId}`);
+  if (!data) return null;
+  try {
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    return { session: parsed as AdminSession, sessionId };
+  } catch {
     return null;
   }
 }
@@ -102,9 +126,11 @@ export async function requireAdminRole(
 
 export async function adminLogout(): Promise<void> {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get('admin_session')?.value;
+  const sessionId = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
   if (sessionId) {
     await redis.del(`${ADMIN_SESSION_PREFIX}${sessionId}`);
-    cookieStore.delete('admin_session');
+    await revokeAdminCsrfToken(sessionId);
+    cookieStore.delete(ADMIN_SESSION_COOKIE);
+    logger.info('admin.logout', { sessionId: sessionId.slice(0, 8) });
   }
 }

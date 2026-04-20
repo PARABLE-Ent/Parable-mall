@@ -106,55 +106,65 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {newProducts.map((product: { id: string; slug: string; name: string; images: { url: string }[]; salePrice: number | null; basePrice: number; category: { name: string } }) => {
-            const image = product.images[0];
-            const displayPrice = product.salePrice ?? product.basePrice;
-            const isOnSale = product.salePrice !== null && product.salePrice < product.basePrice;
-            const discountRate = isOnSale
-              ? Math.round((1 - product.salePrice! / product.basePrice) * 100)
-              : 0;
+          {newProducts.map(
+            (product: {
+              id: string;
+              slug: string;
+              name: string;
+              images: { url: string }[];
+              salePrice: number | null;
+              basePrice: number;
+              category: { name: string };
+            }) => {
+              const image = product.images[0];
+              const displayPrice = product.salePrice ?? product.basePrice;
+              const isOnSale = product.salePrice !== null && product.salePrice < product.basePrice;
+              const discountRate = isOnSale
+                ? Math.round((1 - product.salePrice! / product.basePrice) * 100)
+                : 0;
 
-            return (
-              <Link key={product.id} href={`/products/${product.slug}`} className="group">
-                <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
-                  {image ? (
-                    <Image
-                      src={image.url}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl">
-                      📦
-                    </div>
-                  )}
-                  {isOnSale && (
-                    <span className="absolute top-2 left-2 rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-                      {discountRate}%
-                    </span>
-                  )}
-                </div>
-                <div className="mt-3">
-                  <p className="text-muted-foreground text-xs">{product.category.name}</p>
-                  <p className="mt-0.5 line-clamp-2 text-sm font-medium">{product.name}</p>
-                  <div className="mt-1.5 flex items-baseline gap-1.5">
-                    {isOnSale && (
-                      <span className="text-sm font-bold text-red-500">{discountRate}%</span>
+              return (
+                <Link key={product.id} href={`/products/${product.slug}`} className="group">
+                  <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
+                    {image ? (
+                      <Image
+                        src={image.url}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl">
+                        📦
+                      </div>
                     )}
-                    <span className="text-sm font-bold">
-                      {displayPrice.toLocaleString('ko-KR')}원
-                    </span>
                     {isOnSale && (
-                      <span className="text-muted-foreground text-xs line-through">
-                        {product.basePrice.toLocaleString('ko-KR')}원
+                      <span className="absolute top-2 left-2 rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                        {discountRate}%
                       </span>
                     )}
                   </div>
-                </div>
-              </Link>
-            );
-          })}
+                  <div className="mt-3">
+                    <p className="text-muted-foreground text-xs">{product.category.name}</p>
+                    <p className="mt-0.5 line-clamp-2 text-sm font-medium">{product.name}</p>
+                    <div className="mt-1.5 flex items-baseline gap-1.5">
+                      {isOnSale && (
+                        <span className="text-sm font-bold text-red-500">{discountRate}%</span>
+                      )}
+                      <span className="text-sm font-bold">
+                        {displayPrice.toLocaleString('ko-KR')}원
+                      </span>
+                      {isOnSale && (
+                        <span className="text-muted-foreground text-xs line-through">
+                          {product.basePrice.toLocaleString('ko-KR')}원
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            },
+          )}
         </div>
       </section>
 
@@ -194,30 +204,39 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold">추천 상품</h2>
           <p className="text-muted-foreground mt-1 text-sm">MD가 엄선한 인기 상품</p>
           <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {featuredProducts.map((product: { id: string; slug: string; name: string; images: { url: string }[]; salePrice: number | null; basePrice: number }) => (
-              <Link key={product.id} href={`/products/${product.slug}`} className="group">
-                <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
-                  {product.images[0] ? (
-                    <Image
-                      src={product.images[0].url}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl">
-                      ⭐
-                    </div>
-                  )}
-                </div>
-                <div className="mt-3">
-                  <p className="line-clamp-2 text-sm font-medium">{product.name}</p>
-                  <p className="mt-1 text-sm font-bold">
-                    {(product.salePrice ?? product.basePrice).toLocaleString('ko-KR')}원
-                  </p>
-                </div>
-              </Link>
-            ))}
+            {featuredProducts.map(
+              (product: {
+                id: string;
+                slug: string;
+                name: string;
+                images: { url: string }[];
+                salePrice: number | null;
+                basePrice: number;
+              }) => (
+                <Link key={product.id} href={`/products/${product.slug}`} className="group">
+                  <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
+                    {product.images[0] ? (
+                      <Image
+                        src={product.images[0].url}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl">
+                        ⭐
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <p className="line-clamp-2 text-sm font-medium">{product.name}</p>
+                    <p className="mt-1 text-sm font-bold">
+                      {(product.salePrice ?? product.basePrice).toLocaleString('ko-KR')}원
+                    </p>
+                  </div>
+                </Link>
+              ),
+            )}
           </div>
         </section>
       )}

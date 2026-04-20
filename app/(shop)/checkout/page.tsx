@@ -284,12 +284,13 @@ export default function CheckoutPage() {
                   .map((ov) => `${ov.optionValue.productOption.name}: ${ov.optionValue.value}`)
                   .join(' / ');
                 return (
-                  <div key={item.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between border-b pb-3 last:border-0"
+                  >
                     <div>
                       <p className="font-medium">{item.sku.product.name}</p>
-                      {optionText && (
-                        <p className="text-muted-foreground text-sm">{optionText}</p>
-                      )}
+                      {optionText && <p className="text-muted-foreground text-sm">{optionText}</p>}
                       <p className="text-muted-foreground text-sm">수량: {item.quantity}</p>
                     </div>
                     <p className="font-medium">
@@ -419,8 +420,7 @@ export default function CheckoutPage() {
                     const eligible = !coupon.minOrderAmount || subtotal >= coupon.minOrderAmount;
                     return (
                       <option key={ci.id} value={ci.id} disabled={!eligible}>
-                        {coupon.name} ({discountLabel})
-                        {!eligible ? ' - 최소 주문금액 미달' : ''}
+                        {coupon.name} ({discountLabel}){!eligible ? ' - 최소 주문금액 미달' : ''}
                       </option>
                     );
                   })}
@@ -428,7 +428,9 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="points">적립금 사용 (보유: {availablePoints.toLocaleString()}원)</Label>
+                <Label htmlFor="points">
+                  적립금 사용 (보유: {availablePoints.toLocaleString()}원)
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     id="points"
@@ -449,9 +451,7 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() =>
                       setPointsToUse(
-                        availablePoints >= 1000
-                          ? Math.min(availablePoints, subtotal)
-                          : 0,
+                        availablePoints >= 1000 ? Math.min(availablePoints, subtotal) : 0,
                       )
                     }
                   >

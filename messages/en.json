@@ -10,6 +10,121 @@
     "search": "Search",
     "loading": "Loading...",
     "error": "An error occurred",
-    "notFound": "Page not found"
+    "notFound": "Page not found",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "retry": "Retry",
+    "all": "All"
+  },
+  "nav": {
+    "categories": "Categories",
+    "newArrivals": "New",
+    "bestSellers": "Best",
+    "sale": "Sale",
+    "brand": "Brand",
+    "support": "Support"
+  },
+  "orderStatus": {
+    "PENDING_PAYMENT": "Awaiting Payment",
+    "PAID": "Paid",
+    "PREPARING": "Preparing",
+    "SHIPPING": "Shipping",
+    "DELIVERED": "Delivered",
+    "CONFIRMED": "Purchase Confirmed",
+    "CANCEL_REQUESTED": "Cancel Requested",
+    "CANCELLED": "Cancelled",
+    "RETURN_REQUESTED": "Return Requested",
+    "RETURNED": "Returned",
+    "EXCHANGE_REQUESTED": "Exchange Requested",
+    "EXCHANGED": "Exchanged"
+  },
+  "paymentMethod": {
+    "CARD": "Credit / Debit Card",
+    "VIRTUAL_ACCOUNT": "Virtual Account",
+    "BANK_TRANSFER": "Bank Transfer",
+    "KAKAO_PAY": "KakaoPay",
+    "NAVER_PAY": "NaverPay",
+    "TOSS_PAY": "TossPay"
+  },
+  "grade": {
+    "NORMAL": "Normal",
+    "SILVER": "Silver",
+    "GOLD": "Gold",
+    "VIP": "VIP"
+  },
+  "shipping": {
+    "free": "Free Shipping",
+    "fee": "Shipping Fee",
+    "threshold": "Free shipping over {amount}"
+  },
+  "refund": {
+    "policyPeriod": "Return within {days} days of delivery",
+    "returnFee": "Round-trip shipping fee of {amount} is borne by the customer for change of mind.",
+    "status": {
+      "REQUESTED": "Requested",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "COMPLETED": "Refunded"
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirm": "Confirm password",
+    "name": "Name",
+    "phone": "Phone",
+    "loginFailed": "Email or password is incorrect.",
+    "signupSuccess": "Signup complete.",
+    "forgotPassword": "Forgot password?",
+    "resetSent": "We sent a reset link to your email.",
+    "resetSuccess": "Password updated. Please sign in again.",
+    "rateLimited": "Too many requests. Please try again later."
+  },
+  "error": {
+    "unknown": "An unexpected error occurred.",
+    "unauthorized": "Login required.",
+    "forbidden": "You do not have permission.",
+    "notFound": "The resource was not found.",
+    "validation": "Your input is invalid.",
+    "rateLimited": "Too many requests.",
+    "network": "Network error occurred.",
+    "serverError": "Server error occurred."
+  },
+  "cart": {
+    "empty": "Your cart is empty.",
+    "continue": "Continue shopping",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "shippingFee": "Shipping",
+    "total": "Total",
+    "checkout": "Checkout"
+  },
+  "checkout": {
+    "recipient": "Recipient",
+    "recipientPhone": "Phone",
+    "address": "Address",
+    "addressSearch": "Search address",
+    "shippingMemo": "Shipping note",
+    "coupon": "Apply coupon",
+    "points": "Use points",
+    "paymentMethod": "Payment method",
+    "agree": "I confirm the order and agree to pay.",
+    "payNow": "Pay now",
+    "processing": "Processing payment..."
+  },
+  "review": {
+    "rating": "Rating",
+    "content": "Review",
+    "photo": "Attach photo",
+    "submit": "Submit review",
+    "thanks": "Thanks for your review."
   }
 }

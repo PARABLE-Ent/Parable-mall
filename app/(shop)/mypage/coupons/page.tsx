@@ -149,9 +149,7 @@ export default function CouponsPage() {
       </Card>
 
       {/* Active Coupons */}
-      <h2 className="mt-8 text-lg font-semibold">
-        사용 가능한 쿠폰 ({activeCoupons.length})
-      </h2>
+      <h2 className="mt-8 text-lg font-semibold">사용 가능한 쿠폰 ({activeCoupons.length})</h2>
       {activeCoupons.length === 0 ? (
         <Card className="mt-4">
           <CardContent className="flex flex-col items-center gap-2 py-12">
@@ -200,9 +198,7 @@ export default function CouponsPage() {
       {/* Used Coupons */}
       {usedCoupons.length > 0 && (
         <>
-          <h2 className="mt-8 text-lg font-semibold">
-            사용 완료 ({usedCoupons.length})
-          </h2>
+          <h2 className="mt-8 text-lg font-semibold">사용 완료 ({usedCoupons.length})</h2>
           <div className="mt-4 space-y-3">
             {usedCoupons.map((item) => (
               <Card key={item.id} className="opacity-50">
@@ -214,7 +210,7 @@ export default function CouponsPage() {
                         {formatDiscount(item.coupon.discountType, item.coupon.discountValue)}
                       </p>
                     </div>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">사용 완료</span>
+                    <span className="bg-muted rounded-full px-2 py-0.5 text-xs">사용 완료</span>
                   </div>
                 </CardContent>
               </Card>

@@ -14,8 +14,11 @@ import {
   Menu,
   X,
   LogOut,
+  FileText,
+  MessageSquare,
 } from 'lucide-react';
 
+import { adminFetch } from '@/lib/auth/admin-fetch';
 import { cn } from '@/lib/utils';
 
 const SIDEBAR_LINKS = [
@@ -25,6 +28,8 @@ const SIDEBAR_LINKS = [
   { href: '/admin/users', label: '회원관리', icon: Users },
   { href: '/admin/coupons', label: '쿠폰관리', icon: Ticket },
   { href: '/admin/reviews', label: '리뷰관리', icon: Star },
+  { href: '/admin/qna', label: 'Q&A 관리', icon: MessageSquare },
+  { href: '/admin/audit-logs', label: '감사 로그', icon: FileText },
   { href: '/admin/settings', label: '설정', icon: Settings },
 ];
 
@@ -38,7 +43,7 @@ export function AdminSidebar() {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await fetch('/api/admin/logout', { method: 'POST' });
+    await adminFetch('/api/admin/logout', { method: 'POST' });
     router.push('/admin/login');
   }, [router]);
 

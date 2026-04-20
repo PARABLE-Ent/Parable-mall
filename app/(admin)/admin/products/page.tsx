@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -140,7 +140,7 @@ export default function AdminProductsPage() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
-              <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="상품명 검색..."
                 value={search}
@@ -157,9 +157,9 @@ export default function AdminProductsPage() {
                 <tr className="text-muted-foreground border-b text-left">
                   <th className="px-4 py-3 font-medium">상품명</th>
                   <th className="px-4 py-3 font-medium">카테고리</th>
-                  <th className="px-4 py-3 font-medium text-right">기본가</th>
+                  <th className="px-4 py-3 text-right font-medium">기본가</th>
                   <th className="px-4 py-3 font-medium">상태</th>
-                  <th className="px-4 py-3 font-medium text-right">재고</th>
+                  <th className="px-4 py-3 text-right font-medium">재고</th>
                   <th className="px-4 py-3 font-medium">관리</th>
                 </tr>
               </thead>

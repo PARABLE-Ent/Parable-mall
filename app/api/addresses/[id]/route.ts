@@ -14,10 +14,7 @@ const addressSchema = z.object({
   isDefault: z.boolean().optional(),
 });
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return apiError('로그인이 필요합니다.', 401);
   const userId = session.user.id;
@@ -51,10 +48,7 @@ export async function PATCH(
   return apiSuccess(address);
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return apiError('로그인이 필요합니다.', 401);
   const userId = session.user.id;

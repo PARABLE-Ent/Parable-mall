@@ -1,15 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  Search,
-  AlertTriangle,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { Search, AlertTriangle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -132,7 +126,7 @@ export default function AdminUsersPage() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
-              <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="이름 또는 이메일 검색..."
                 value={search}
@@ -150,7 +144,7 @@ export default function AdminUsersPage() {
                   <th className="px-4 py-3 font-medium">이름</th>
                   <th className="px-4 py-3 font-medium">이메일</th>
                   <th className="px-4 py-3 font-medium">등급</th>
-                  <th className="px-4 py-3 font-medium text-right">총 구매액</th>
+                  <th className="px-4 py-3 text-right font-medium">총 구매액</th>
                   <th className="px-4 py-3 font-medium">가입일</th>
                 </tr>
               </thead>

@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdmin } from '@/lib/auth/admin';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 import { redis } from '@/lib/cache/redis';
 import { prisma } from '@/lib/db';
 
 const DASHBOARD_CACHE_KEY = 'admin:dashboard';
 const DASHBOARD_CACHE_TTL = 5 * 60; // 5분
 
-export async function GET() {
-  await requireAdmin();
+export async function GET(request: Request) {
+  const ctx = await requireAdminApi(request);
+  if (ctx instanceof NextResponse) return ctx;
 
   // Redis 캐시 확인
   const cached = await redis.get<string>(DASHBOARD_CACHE_KEY);
@@ -59,7 +60,6 @@ export async function GET() {
     prisma.inventory.count({ where: { quantity: { lte: 5 } } }),
   ]);
 
-  // 최근 주문
   const recentOrders = await prisma.order.findMany({
     include: {
       user: { select: { name: true } },
@@ -82,7 +82,6 @@ export async function GET() {
     recentOrders,
   };
 
-  // Redis 캐시 저장 (5분)
   await redis.set(DASHBOARD_CACHE_KEY, JSON.stringify(responseData), {
     ex: DASHBOARD_CACHE_TTL,
   });

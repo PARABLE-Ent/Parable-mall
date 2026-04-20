@@ -1,18 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  Plus,
-  AlertTriangle,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { Plus, AlertTriangle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { adminFetch } from '@/lib/auth/admin-fetch';
 
 interface Coupon {
   id: string;
@@ -45,11 +40,6 @@ interface CouponFormData {
   startDate: string;
   endDate: string;
 }
-
-const DISCOUNT_TYPE_LABEL: Record<string, string> = {
-  PERCENTAGE: '% 할인',
-  FIXED: '원 할인',
-};
 
 function formatDiscount(type: string, value: number): string {
   if (type === 'PERCENTAGE') return `${value}%`;
@@ -102,13 +92,19 @@ export default function AdminCouponsPage() {
   };
 
   const handleCreateCoupon = async () => {
-    if (!form.name.trim() || !form.code.trim() || !form.discountValue || !form.startDate || !form.endDate) {
+    if (
+      !form.name.trim() ||
+      !form.code.trim() ||
+      !form.discountValue ||
+      !form.startDate ||
+      !form.endDate
+    ) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/coupons', {
+      const res = await adminFetch('/api/admin/coupons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -279,7 +275,7 @@ export default function AdminCouponsPage() {
                   <th className="px-4 py-3 font-medium">코드</th>
                   <th className="px-4 py-3 font-medium">할인</th>
                   <th className="px-4 py-3 font-medium">기간</th>
-                  <th className="px-4 py-3 font-medium text-right">발급수</th>
+                  <th className="px-4 py-3 text-right font-medium">발급수</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,14 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  DollarSign,
-  ShoppingCart,
-  Users,
-  Clock,
-  AlertTriangle,
-  RefreshCw,
-} from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -178,9 +171,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.todayOrders}건</div>
-            <p className="text-muted-foreground text-xs">
-              활성 상품: {summary.totalProducts}개
-            </p>
+            <p className="text-muted-foreground text-xs">활성 상품: {summary.totalProducts}개</p>
           </CardContent>
         </Card>
 
@@ -224,7 +215,7 @@ export default function AdminDashboardPage() {
                   <th className="px-4 py-3 font-medium">주문번호</th>
                   <th className="px-4 py-3 font-medium">고객명</th>
                   <th className="px-4 py-3 font-medium">상품</th>
-                  <th className="px-4 py-3 font-medium text-right">금액</th>
+                  <th className="px-4 py-3 text-right font-medium">금액</th>
                   <th className="px-4 py-3 font-medium">상태</th>
                   <th className="px-4 py-3 font-medium">날짜</th>
                 </tr>
@@ -242,7 +233,9 @@ export default function AdminDashboardPage() {
                       <td className="px-4 py-3 font-mono text-xs">{order.orderNumber}</td>
                       <td className="px-4 py-3">{order.user.name ?? '(이름 없음)'}</td>
                       <td className="max-w-[200px] truncate px-4 py-3">
-                        {order.items.map((item) => `${item.productName}(${item.quantity})`).join(', ')}
+                        {order.items
+                          .map((item) => `${item.productName}(${item.quantity})`)
+                          .join(', ')}
                       </td>
                       <td className="px-4 py-3 text-right font-medium">
                         {order.totalAmount.toLocaleString('ko-KR')}원
