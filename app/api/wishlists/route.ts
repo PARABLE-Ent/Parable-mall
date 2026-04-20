@@ -33,7 +33,7 @@ export async function GET(request: Request) {
             id: true,
             name: true,
             slug: true,
-            listPrice: true,
+            basePrice: true,
             salePrice: true,
             status: true,
             images: { take: 1 },

@@ -53,7 +53,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const mailer = getMailer();
   const tpl = templates.passwordReset(resetUrl);
   const result = await mailer.send({
-    to: user.email,
+    to: email,
     subject: tpl.subject,
     html: tpl.html,
     text: tpl.text,

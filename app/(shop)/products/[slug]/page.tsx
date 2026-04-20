@@ -234,48 +234,40 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="mt-12 border-t pt-8">
             <h2 className="mb-4 text-xl font-bold">리뷰 ({product._count.reviews})</h2>
             <div className="space-y-4">
-              {product.reviews.map(
-                (review: {
-                  id: string;
-                  rating: number;
-                  content: string;
-                  user: { name: string };
-                  images: { id: string; url: string }[];
-                }) => (
-                  <div key={review.id} className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{review.user.name}</span>
-                      <span
-                        className="text-muted-foreground text-sm"
-                        aria-label={`${review.rating}점`}
-                      >
-                        {'★'.repeat(review.rating)}
-                        {'☆'.repeat(5 - review.rating)}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm">{review.content}</p>
-                    {review.images.length > 0 && (
-                      <div className="mt-2 flex gap-2">
-                        {review.images.map((img: { id: string; url: string }) => (
-                          <div
-                            key={img.id}
-                            className="bg-muted relative h-16 w-16 overflow-hidden rounded"
-                          >
-                            <Image
-                              src={img.url}
-                              alt="리뷰 이미지"
-                              fill
-                              className="object-cover"
-                              sizes="64px"
-                              loading="lazy"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+              {product.reviews.map((review) => (
+                <div key={review.id} className="rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{review.user.name ?? '익명'}</span>
+                    <span
+                      className="text-muted-foreground text-sm"
+                      aria-label={`${review.rating}점`}
+                    >
+                      {'★'.repeat(review.rating)}
+                      {'☆'.repeat(5 - review.rating)}
+                    </span>
                   </div>
-                ),
-              )}
+                  <p className="mt-2 text-sm">{review.content}</p>
+                  {review.images.length > 0 && (
+                    <div className="mt-2 flex gap-2">
+                      {review.images.map((img: { id: string; url: string }) => (
+                        <div
+                          key={img.id}
+                          className="bg-muted relative h-16 w-16 overflow-hidden rounded"
+                        >
+                          <Image
+                            src={img.url}
+                            alt="리뷰 이미지"
+                            fill
+                            className="object-cover"
+                            sizes="64px"
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}

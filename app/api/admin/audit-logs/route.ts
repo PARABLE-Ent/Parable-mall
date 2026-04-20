@@ -5,7 +5,7 @@ import { requireAdminApi } from '@/lib/auth/admin-api';
 import { getAuditLogs } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
-  const ctx = await requireAdminApi(request, { roles: ['SUPER_ADMIN'] });
+  const ctx = await requireAdminApi(request, { roles: ['OWNER'] });
   if (ctx instanceof NextResponse) return ctx;
 
   const { searchParams } = request.nextUrl;
