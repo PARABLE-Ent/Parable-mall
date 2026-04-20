@@ -97,13 +97,22 @@ function LoginForm() {
           <Separator className="my-6" />
 
           <div className="space-y-2">
-            <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('kakao')}>
+            <Button
+              type="button"
+              className="w-full border border-transparent bg-[#FEE500] text-[#191919] hover:bg-[#FADA0A] dark:bg-[#FEE500] dark:text-[#191919]"
+              onClick={() => handleSocialLogin('kakao')}
+            >
               카카오로 로그인
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('naver')}>
+            <Button
+              type="button"
+              className="w-full border border-transparent bg-[#03C75A] text-white hover:bg-[#02B351] dark:bg-[#03C75A] dark:text-white"
+              onClick={() => handleSocialLogin('naver')}
+            >
               네이버로 로그인
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="w-full"
               onClick={() => handleSocialLogin('google')}

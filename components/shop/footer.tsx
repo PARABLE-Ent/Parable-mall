@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 const FOOTER_LINKS = {
   고객지원: [
-    { href: '/faq', label: 'FAQ' },
     { href: '/about', label: '사업자 정보' },
+    { href: 'mailto:cs@parable-ent.com', label: '문의 메일' },
   ],
   법적고지: [
     { href: '/terms', label: '이용약관' },

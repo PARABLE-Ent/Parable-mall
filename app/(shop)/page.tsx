@@ -57,7 +57,7 @@ export default async function HomePage() {
               href="/categories/albums"
               className={cn(
                 buttonVariants({ size: 'lg', variant: 'outline' }),
-                'border-white/30 text-white hover:bg-white/10',
+                'border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white dark:bg-transparent',
               )}
             >
               앨범 보기

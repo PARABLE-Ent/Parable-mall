@@ -63,7 +63,7 @@ export default function MyPage() {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <p className="text-destructive">{error ?? '프로필을 불러올 수 없습니다.'}</p>
-        <Link href="/auth/signin" className="text-primary mt-2 inline-block underline">
+        <Link href="/login" className="text-primary mt-2 inline-block underline">
           로그인하기
         </Link>
       </div>

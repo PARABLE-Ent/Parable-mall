@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { ShoppingCart, Search, User, Menu, X, Sun, Moon } from 'lucide-react';
+import { ShoppingCart, User, LogIn, Menu, X, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -27,7 +27,7 @@ function readInitialTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export function Header() {
+export function Header({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => readInitialTheme());
   const pathname = usePathname();
@@ -108,26 +108,41 @@ export function Header() {
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
             <Link
-              href="/search"
-              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-              aria-label="검색"
-            >
-              <Search className="h-5 w-5" />
-            </Link>
-            <Link
               href="/cart"
               className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
               aria-label="장바구니"
             >
               <ShoppingCart className="h-5 w-5" />
             </Link>
-            <Link
-              href="/mypage"
-              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-              aria-label="마이페이지"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/mypage"
+                className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+                aria-label="마이페이지"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'sm' }),
+                  'ml-1 hidden sm:inline-flex',
+                )}
+              >
+                <LogIn className="mr-1 h-4 w-4" />
+                로그인
+              </Link>
+            )}
+            {!isAuthenticated && (
+              <Link
+                href="/login"
+                className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'sm:hidden')}
+                aria-label="로그인"
+              >
+                <LogIn className="h-5 w-5" />
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -185,13 +200,23 @@ export function Header() {
         {/* 하단 유틸 링크 */}
         <div className="border-t px-4 py-4">
           <div className="space-y-1">
-            <Link
-              href="/mypage"
-              className="text-muted-foreground hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors"
-            >
-              <User className="h-4 w-4" />
-              마이페이지
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/mypage"
+                className="text-muted-foreground hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors"
+              >
+                <User className="h-4 w-4" />
+                마이페이지
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="text-muted-foreground hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                로그인
+              </Link>
+            )}
             <Link
               href="/cart"
               className="text-muted-foreground hover:text-foreground flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors"
