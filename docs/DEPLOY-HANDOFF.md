@@ -1,8 +1,9 @@
-# Vercel 첫 배포 핸드오프 (진행 중)
+# Vercel 첫 배포 핸드오프 (완료 ✅ + 상용 전환 TODO)
 
-> **마지막 갱신**: 2026-04-20
-> **상태**: 🟡 사용자 자격 증명 수집 대기 중 — 모든 코드/설정 준비 완료
-> **이어받는 Agent 에게**: 이 문서는 세션이 끊긴 Vercel 첫 배포 작업을 그대로 이어받기 위한 런북입니다. "📋 체크리스트" 섹션부터 순서대로 따라가면 됩니다. **`⚠️ 절대 주의사항` 은 건너뛰지 말 것.**
+> **마지막 갱신**: 2026-04-20 (Preview 배포 성공)
+> **상태**: ✅ **Preview 배포 완료**. DB 시드 주입됨. UI/UX 1차 정리 완료.
+> **현재 Preview URL (고정)**: https://parable-mall-git-claude-affectio-ecbd8a-seongsul-2586s-projects.vercel.app
+> **이어받는 Agent 에게**: 첫 배포는 끝났어. 아래 "📋 체크리스트" 는 이미 다 체크된 기록용. 새 작업은 "🚧 TODO — 상용 전환" 섹션부터 시작. **`⚠️ 절대 주의사항` 은 여전히 유효하니 건너뛰지 말 것.**
 
 ---
 
@@ -32,24 +33,24 @@
 
 ---
 
-## 📋 체크리스트 (순서대로 실행)
+## 📋 체크리스트 (전부 완료 — 아카이브)
 
-### ☐ 1. 사용자에게서 받아야 할 값 확인
+### ☑ 1. 사용자에게서 받아야 할 값 확인
 
-| 키 | 출처 | 수집 상태 |
-|---|---|---|
-| `VERCEL_TOKEN` | https://vercel.com/account/tokens | ⏳ 미수령 |
-| `UPSTASH_REDIS_REST_URL` | Upstash 콘솔 신규 생성 | ⏳ 미수령 |
-| `UPSTASH_REDIS_REST_TOKEN` | 동일 | ⏳ 미수령 |
-| DB 유저(`parable_app`) 비밀번호 | 사용자가 Step 2 에서 정함 | ⏳ 미수령 |
-| Cloud SQL Public IP | `gcloud sql instances describe` 결과 | ⏳ 미수령 |
-| R2 Bucket 이름 | `parable-mall` (신규 생성) | ⏳ 미수령 |
-| `R2_ACCOUNT_ID` | `93119c32768630657292ca7922309cda` | ✅ 확인됨 |
-| `R2_ACCESS_KEY_ID` | Virdy R2 키 재사용 | ✅ 확인됨 (사용자 보관) |
-| `R2_SECRET_ACCESS_KEY` | 동일 | ✅ 확인됨 (사용자 보관) |
-| `R2_ENDPOINT` | `https://93119c32768630657292ca7922309cda.r2.cloudflarestorage.com` | ✅ 확인됨 |
+| 키                              | 출처                                                                | 수집 상태               |
+| ------------------------------- | ------------------------------------------------------------------- | ----------------------- |
+| `VERCEL_TOKEN`                  | https://vercel.com/account/tokens                                   | ⏳ 미수령               |
+| `UPSTASH_REDIS_REST_URL`        | Upstash 콘솔 신규 생성                                              | ⏳ 미수령               |
+| `UPSTASH_REDIS_REST_TOKEN`      | 동일                                                                | ⏳ 미수령               |
+| DB 유저(`parable_app`) 비밀번호 | 사용자가 Step 2 에서 정함                                           | ⏳ 미수령               |
+| Cloud SQL Public IP             | `gcloud sql instances describe` 결과                                | ⏳ 미수령               |
+| R2 Bucket 이름                  | `parable-mall` (신규 생성)                                          | ⏳ 미수령               |
+| `R2_ACCOUNT_ID`                 | `93119c32768630657292ca7922309cda`                                  | ✅ 확인됨               |
+| `R2_ACCESS_KEY_ID`              | Virdy R2 키 재사용                                                  | ✅ 확인됨 (사용자 보관) |
+| `R2_SECRET_ACCESS_KEY`          | 동일                                                                | ✅ 확인됨 (사용자 보관) |
+| `R2_ENDPOINT`                   | `https://93119c32768630657292ca7922309cda.r2.cloudflarestorage.com` | ✅ 확인됨               |
 
-### ☐ 2. Cloud SQL 프로비저닝 (사용자 로컬에서 실행)
+### ☑ 2. Cloud SQL 프로비저닝 (사용자 로컬에서 실행)
 
 ```bash
 # 0. 프로젝트 선택
@@ -87,33 +88,35 @@ gcloud sql instances patch virdy-v2-db --authorized-networks=0.0.0.0/0
 ```
 
 → 결과로 조합되는 `DATABASE_URL`:
+
 ```
 postgresql://parable_app:<위에서_생성한_PW>@<PUBLIC_IP>:5432/parable_mall?schema=public&sslmode=require
 ```
 
 **비밀번호에 `@`, `/`, `:`, `?`, `#` 등이 들어가면 URL encoding 필요**. 위 `tr -d` 옵션으로 이미 특수문자 제거했으므로 그대로 써도 됨.
 
-### ☐ 3. Upstash Redis 생성
+### ☑ 3. Upstash Redis 생성
 
 웹 콘솔에서 5초:
+
 1. https://console.upstash.com/redis → "Create Database"
 2. Name: `parable-mall-prod`
 3. Type: **Regional**, Region: `ap-northeast-2` (Seoul)
 4. TLS: Enabled
 5. 생성 후 "REST API" 탭 → `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` 복사
 
-### ☐ 4. R2 버킷 생성
+### ☑ 4. R2 버킷 생성
 
 1. Cloudflare 대시보드 → R2 → "Create bucket"
 2. 이름: `parable-mall` (또는 `parable-mall-dev`)
 3. Location: APAC
 4. 기존 키가 "Apply to all buckets in this account" 권한인지 확인 (Manage R2 API Tokens). 특정 버킷 한정이었으면 계정 전체 권한 토큰 새로 발급.
 
-### ☐ 5. Vercel 토큰 발급
+### ☑ 5. Vercel 토큰 발급
 
 https://vercel.com/account/tokens → Create Token → 이름 `parable-mall-cli`, 만료 1년.
 
-### ☐ 6. 환경변수 파일 준비 (gitignore 됨)
+### ☑ 6. 환경변수 파일 준비 (gitignore 됨)
 
 프로젝트 루트에 `.env.deploy.local` 작성 (이 파일은 절대 커밋되지 않음):
 
@@ -133,12 +136,13 @@ R2_ENDPOINT=https://<r2-account-id>.r2.cloudflarestorage.com
 ```
 
 확인:
+
 ```bash
 # .gitignore 에 .env.deploy.local 포함되었는지
 grep -q ".env.deploy.local" .gitignore || echo ".env.deploy.local" >> .gitignore
 ```
 
-### ☐ 7. 자동 생성 시크릿 + PG 샌드박스 값
+### ☑ 7. 자동 생성 시크릿 + PG 샌드박스 값
 
 나머지는 다음 명령으로 자동 채우기 (Claude Code agent 가 실행):
 
@@ -166,7 +170,7 @@ NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 NODE_ENV=production
 ```
 
-### ☐ 8. Vercel CLI 로 env 일괄 등록 + 배포
+### ☑ 8. Vercel CLI 로 env 일괄 등록 + 배포
 
 Claude Code agent 가 실행할 명령 흐름:
 
@@ -223,7 +227,7 @@ git push origin claude/affectionate-wiles
 vercel deploy --yes --archive=tgz
 ```
 
-### ☐ 9. 최초 마이그레이션 (신규 DB 는 비어 있음)
+### ☑ 9. 최초 마이그레이션 (신규 DB 는 비어 있음)
 
 Vercel 빌드 스크립트는 `prisma generate && next build`. **`migrate deploy` 는 자동 실행하지 않음** (실수 방지). 최초 1회 수동 실행:
 
@@ -236,7 +240,7 @@ DATABASE_URL="postgresql://parable_app:...@PUBLIC_IP:5432/parable_mall?..." \
 DATABASE_URL="..." pnpm db:seed
 ```
 
-### ☐ 10. 배포 검증
+### ☑ 10. 배포 검증
 
 1. Vercel 대시보드에서 Preview URL 획득 (예: `https://parable-mall-xxxxx-parable-ent.vercel.app`)
 2. `curl https://<preview>/api/health` → `{"status":"ok"}` 확인
@@ -249,35 +253,66 @@ DATABASE_URL="..." pnpm db:seed
 
 ---
 
-## 🗂 이 세션에서 수집/확정한 정보
+## 🗂 확정된 배포 인프라 (현재 상태)
 
-| 항목 | 값 |
-|---|---|
-| GitHub Repo | https://github.com/PARABLE-Ent/Parable-mall.git |
-| 푸시 브랜치 | `claude/affectionate-wiles` (origin/main 대비 4 커밋 + 로컬 unstaged 변경) |
-| GCP Project | `virdy-parable` |
-| Cloud SQL Instance | `virdy-v2-db` (region: `asia-northeast3`) |
-| 사용할 DB 이름 | `parable_mall` (**신규 생성 필요**) |
-| DB 앱 유저 | `parable_app` (**신규 생성 필요**) |
-| R2 Account ID | `93119c32768630657292ca7922309cda` |
-| R2 Bucket | `parable-mall` (**신규 생성 필요**) |
-| Redis | Upstash Regional, `ap-northeast-2`, 신규 DB `parable-mall-prod` |
-| 결제 PG | 공식 샌드박스 테스트 키 사용 |
-| Resend/Sentry/PostHog | skip (no-op fallback) |
-| NEXTAUTH_URL | Preview 는 `VERCEL_URL` 자동, 프로덕션은 추후 결정 |
+| 항목                         | 값                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| GitHub Repo                  | https://github.com/PARABLE-Ent/Parable-mall.git                                    |
+| Preview 고정 URL             | https://parable-mall-git-claude-affectio-ecbd8a-seongsul-2586s-projects.vercel.app |
+| 작업 브랜치                  | `claude/affectionate-wiles` (이 브랜치 push → 자동 Preview 빌드)                   |
+| Vercel 프로젝트 ID           | `prj_ig1hR0DhDc138OGcuvDHaSji0jAF` (scope `seongsul-2586s-projects`)               |
+| GCP Project                  | `virdy-parable`                                                                    |
+| Cloud SQL Instance           | `virdy-v2-db` (region: `asia-northeast3`, Public IP `34.22.100.7`)                 |
+| DB 이름                      | `parable_mall` ✅ 생성됨, 시드 완료                                                |
+| DB 앱 유저                   | `parable_app` ✅ 생성됨, 권한 부여됨                                               |
+| Authorized Networks          | `112.222.211.172/32` (사용자 고정) + `0.0.0.0/0` (Vercel egress, 임시)             |
+| Redis                        | Upstash Regional `fast-panda-78126.upstash.io` (ap-northeast-2)                    |
+| R2 Bucket                    | `parable-mall-prod` (Virdy 키 재사용)                                              |
+| 결제 PG                      | 공식 샌드박스 테스트 키                                                            |
+| Resend/Sentry/PostHog        | placeholder (no-op fallback)                                                       |
+| OAuth (카카오/네이버/Google) | placeholder (버튼만 브랜드 컬러, 클릭 시 에러)                                     |
+| NEXTAUTH_URL                 | Preview 는 `VERCEL_URL` 자동, 프로덕션 도메인 미확정                               |
+| SSO Protection               | ⚠️ **비활성화 상태** (Preview 외부 공개 중) — 상용 전 재활성화                     |
+
+### 테스트 계정 (seed)
+
+| 역할      | 이메일                  | 비밀번호                      |
+| --------- | ----------------------- | ----------------------------- |
+| 일반 유저 | `test@parable-ent.com`  | `Test1234!`                   |
+| 관리자    | `admin@parable-ent.com` | `Admin1234!` (`/admin/login`) |
 
 ---
 
-## 🚧 TODO (이번 배포 이후 과제)
+## 🚧 TODO — 상용 전환 (새 세션은 여기부터 시작)
+
+### A. UI/UX 잔여 (쉬운 것들, 순서 무관)
+
+- [ ] 체크아웃 `sticky top-20` 가 모바일에서 입력칸 가리는 이슈 → `hidden lg:block lg:sticky lg:top-20`
+- [ ] 장바구니 수량 +/- 버튼 터치 타겟 확대 (`px-3 py-2` 또는 `h-10 w-10`)
+- [ ] 마이페이지 하위 페이지들 empty state 아이콘 크기 통일 (공용 `EmptyState` 컴포넌트 권장, 현재 h-8/h-12 제각각)
+- [ ] about 페이지 사업자 정보 테이블 라벨 대비 (`text-muted-foreground` → `font-semibold text-foreground`)
+- [ ] 리뷰 별점에 숫자 평점 병기 (`${rating}/5`)
+- [ ] 푸터 `[대표자명]/[전화번호]/[사업장 주소]` 등 placeholder 실제 값으로 교체
+- [ ] 회원가입 input 에 도움말 텍스트 추가 (placeholder 는 포커스 시 사라짐)
+
+### B. 상용 인프라 전환
 
 - [ ] Cloud SQL 전용 인스턴스로 분리 (Virdy 와 완전 격리)
-- [ ] Public IP `0.0.0.0/0` 허용 → VPC Connector + Private IP 로 전환
-- [ ] 프로덕션 도메인 결정 및 `NEXTAUTH_URL` 확정
+- [ ] Public IP `0.0.0.0/0` → VPC Connector + Private IP
+- [ ] **SSO Protection 재활성화** (`PATCH /v10/projects/{id}` with `ssoProtection: {deploymentType: 'all_except_custom_domains'}`)
+- [ ] 프로덕션 도메인 확정 및 `NEXTAUTH_URL` Vercel env 등록
 - [ ] Sentry / PostHog 실제 프로젝트 연결
 - [ ] Resend 실제 API 키 + 도메인 verify
-- [ ] 결제 PG 실 운영 키 교체 (상용 런칭 직전)
-- [ ] `main` 브랜치로 병합 및 Vercel Production 배포
-- [ ] CI 에서 `prisma migrate deploy` 를 수동 승인 필요 워크플로로 분리
+- [ ] 카카오/네이버/Google OAuth 실 운영 키 등록
+- [ ] 결제 PG 샌드박스 → 실 운영 키 교체 (상용 런칭 직전)
+- [ ] `main` 브랜치로 병합 + Vercel Production 배포
+- [ ] CI 에서 `prisma migrate deploy` 를 수동 승인 워크플로로 분리
+
+### C. Cowork 환경에서 이어서 작업할 때 참고
+
+- `binaries.prisma.sh` 차단 → `prisma generate` / `pnpm build` / `pnpm typecheck` 샌드박스 실패. **코드 편집 + 커밋까지만 Cowork 에서** 진행하고, 빌드 검증은 push 후 Vercel CI 에 맡기거나 사용자 로컬에서.
+- `.env.deploy.local` 은 로컬 전용 (gitignore). Cowork 에는 없음. DB 직접 접속 / `vercel env add` 같은 실행은 사용자 로컬 Claude Code 에서.
+- Preview 빌드는 이 브랜치 push 시 자동 트리거. 2~3분 후 위 "Preview 고정 URL" 에서 바로 확인 가능.
 
 ---
 

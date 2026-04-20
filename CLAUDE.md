@@ -1,27 +1,88 @@
 # Parable Mall - 프로젝트 컨벤션 & 결정 로그
 
-## 🚧 현재 작업: Vercel 첫 배포 (이어서 진행)
+## ✅ 현재 상태: Vercel Preview 배포 완료 + UI/UX 1차 정리 (2026-04-20)
 
-> **Claude Code / 다음 세션에서 이어받는 Agent 에게**: 먼저 [`docs/DEPLOY-HANDOFF.md`](./docs/DEPLOY-HANDOFF.md) 를 읽고 그 안의 "📋 체크리스트" 를 순서대로 진행하세요. 아래는 30초 요약입니다.
+> **다음 세션 (Cowork 샌드박스 / 로컬 Claude Code) 에게**: 배포는 돌아가고 있음. 상세 진행 상태는 [`docs/DEPLOY-HANDOFF.md`](./docs/DEPLOY-HANDOFF.md) 참조. 아래는 30초 요약.
 
-**마지막 세션**: 2026-04-20 — 사용자 자격 증명 수집 대기 중 상태로 중단.
+### 🔗 살아있는 URL + 자격 증명
 
-**30초 요약**
+- **Preview (항상 최신)**: https://parable-mall-git-claude-affectio-ecbd8a-seongsul-2586s-projects.vercel.app
+- **GitHub**: https://github.com/PARABLE-Ent/Parable-mall.git (브랜치 `claude/affectionate-wiles`, 이 브랜치가 Preview 자동 빌드 대상)
+- **Vercel 프로젝트**: `parable-mall` (scope `seongsul-2586s-projects`, id `prj_ig1hR0DhDc138OGcuvDHaSji0jAF`)
+- **Cloud SQL**: `virdy-parable:asia-northeast3:virdy-v2-db` 인스턴스의 `parable_mall` DB, 유저 `parable_app`
+- **Redis**: Upstash `fast-panda-78126.upstash.io` (Seoul)
+- **R2**: 버킷 `parable-mall-prod`, Account `93119c32768630657292ca7922309cda`
+- **테스트 계정** (seed 로 생성됨):
+  - 일반: `test@parable-ent.com` / `Test1234!`
+  - 관리자: `admin@parable-ent.com` / `Admin1234!` (`/admin/login`)
 
-- Phase 0 ~ 6 모두 완료. 로컬 lint / format / test 72/72 통과 (sandbox 에서 Prisma 엔진 다운로드만 차단됨 — 환경 이슈, 코드 이슈 아님).
-- GitHub `origin = https://github.com/PARABLE-Ent/Parable-mall.git` 연결 완료. 현재 브랜치 `claude/affectionate-wiles` (origin/main 에서 4 커밋 + 로컬 unstaged 변경).
-- Vercel 프로젝트 어제 연결됨. CLI(`vercel` 51.6.1) 설치 완료.
-- 남은 작업: Vercel 환경변수 등록 + PR 브랜치 push → Preview 빌드 검증.
-- **사용자에게서 받아야 할 값**: `VERCEL_TOKEN`, Upstash Redis REST URL/Token, Cloud SQL `parable_app` 유저 비밀번호 + 인스턴스 Public IP.
-- **이미 확정**: R2 기존 키 재사용 (`Account 93119c32768630657292ca7922309cda`, 버킷만 `parable-mall` 신규 생성), PG 샌드박스 테스트 키 사용, Resend/Sentry/PostHog skip.
+### 📦 이번(2026-04-20) 세션에서 완료한 것
 
-**🚨 가장 중요한 주의사항 세 가지**
+1. **Cloud SQL 프로비저닝** — `parable_mall` DB + `parable_app` 유저 생성, GRANT, Public IP `0.0.0.0/0` 임시 허용 (`112.222.211.172/32` 고정 IP 유지)
+2. **Prisma 마이그레이션** — `prisma migrate deploy` 로 `20260416005716_init` 적용
+3. **시드 데이터** — 5 카테고리 / 20 상품 / 10 더미 주문 / 테스트 유저 2명
+4. **Vercel 첫 배포** — production/preview/development 3환경 × 21 env vars 등록, GitHub 연동, `framework: nextjs` 수동 설정 (CLI 생성 프로젝트는 자동 감지 안 됨 — 중요 함정)
+5. **UI/UX 1차 정리**
+   - 랜딩 '앨범 보기' 버튼 라이트 모드 글자 안 보이던 문제 (`bg-background` → `bg-transparent`)
+   - 헤더 로그인 상태 분기 (비로그인 = "로그인" 버튼 / 로그인 = 사람 아이콘 → /mypage). `ShopLayout` 서버 컴포넌트에서 `auth()` 호출해서 `isAuthenticated` 주입
+   - 깨진 링크 제거: 헤더 `/search`, 푸터 `/faq`, 마이페이지 `/auth/signin` → `/login`
+   - 소셜 로그인 버튼 브랜드 컬러 (카카오 #FEE500, 네이버 #03C75A)
+6. **빌드/타입 이슈 수정** — `@tosspayments/payment-sdk` 버전 오타 (`^2.3.0` → `^1.9.2`), 리뷰 map 인라인 타입 정리, `SUPER_ADMIN` (enum 미존재) → `OWNER`, `listPrice` → `basePrice`, `password-reset` 메일 to 필드 nullable 처리
 
-1. **DB 격리**: 기존 Virdy 운영 인스턴스(`virdy-parable:asia-northeast3:virdy-v2-db`) 에 **새 DB `parable_mall` 만 생성** 해서 사용. `virdy` DB 에는 절대 Prisma 마이그레이션 실행 금지.
-2. **JDBC URL 금지**: 기존 Virdy 설정은 `jdbc:postgresql:///...&socketFactory=...` Java 형식 — Prisma 에서 못 씀. 반드시 표준 `postgresql://user:pass@host:port/parable_mall?sslmode=require` 로 재조립.
-3. **R2 버킷 분리**: 키는 재사용해도 되지만 버킷은 `parable-mall` 신규 생성. Virdy 버킷에 쇼핑몰 이미지 섞지 말 것.
+### 🚨 절대 주의사항 (계속 유효)
 
-상세 실행 커맨드, env 변수 전체 목록, 검증 절차는 전부 [`docs/DEPLOY-HANDOFF.md`](./docs/DEPLOY-HANDOFF.md) 에 있습니다.
+1. **DB 격리**: Virdy 운영 인스턴스 공유 중. **`parable_mall` DB 에만** 작업. `virdy` DB 에 Prisma 마이그레이션 / DDL 절대 금지.
+2. **JDBC URL 금지**: `jdbc:postgresql:///...&socketFactory=...` 는 Java 전용. Prisma/Node 는 `postgresql://user:pass@host:port/parable_mall?sslmode=require` 표준 형식만.
+3. **R2 버킷 분리**: 버킷은 `parable-mall-prod` 만 사용. Virdy 버킷에 쇼핑몰 이미지 섞지 말 것.
+4. **시크릿 커밋 금지**: 값은 `.env.deploy.local` (gitignore 됨) 또는 `vercel env add` / REST API 로만. md 파일/커밋 메시지/로그 에 평문 금지.
+5. **Cowork 샌드박스 제약**: `binaries.prisma.sh` 차단 → `prisma generate` / `pnpm build` / `pnpm typecheck` 가 샌드박스에서 실패함. **코드 문제 아닌 환경 제약**. DB 작업이나 배포는 사용자 로컬 Claude Code 에서. Cowork 에서는 코드 편집 + 커밋까지만.
+
+### ⏭️ 다음 세션에서 할 일 (우선순위 순)
+
+**A. 남은 UI/UX 잔여 (작은 것들, 순서 무관)**
+
+- 체크아웃 `sticky top-20` 가 모바일에서 입력칸 가리는 이슈 → `hidden lg:block lg:sticky lg:top-20` 스타일로 분기
+- 장바구니 수량 +/- 버튼 터치 타겟 확대 (`h-10 w-10`)
+- 마이페이지 하위 페이지들 empty state 아이콘 크기 통일 (공용 EmptyState 컴포넌트 권장)
+- about 페이지 사업자 정보 테이블 라벨 대비 (`text-muted-foreground` → `font-semibold text-foreground`)
+- 리뷰 별점에 숫자 평점 병기 (`${rating}/5` 표시)
+- 푸터 `[대표자명]/[전화번호]/[사업장 주소]` 등 placeholder 실제 값으로 교체
+- 회원가입 input 에 도움말 텍스트 추가 (placeholder 만으로는 포커스 시 사라져 불친절)
+
+**B. 상용 전환 TODO** ([`docs/DEPLOY-HANDOFF.md`](./docs/DEPLOY-HANDOFF.md) 🚧 섹션)
+
+1. Cloud SQL 전용 인스턴스로 분리 (Virdy 와 완전 격리)
+2. `0.0.0.0/0` → VPC Connector + Private IP
+3. **SSO Protection 재활성화** (테스트 편의상 현재 꺼둔 상태 — 외부 공개 전 반드시 다시 켜기. PATCH `/v10/projects/{id}` with `ssoProtection: {deploymentType: 'all_except_custom_domains'}`)
+4. 프로덕션 도메인 확정 + `NEXTAUTH_URL` Vercel env 등록
+5. Sentry / PostHog / Resend 실제 키 교체
+6. 카카오/네이버/구글 OAuth 실 운영 키 등록 (현재 placeholder)
+7. 결제 PG 샌드박스 → 운영 키
+8. `main` 으로 머지 후 Vercel Production 배포
+
+### 🛠 이어서 작업할 때 자주 쓰는 커맨드
+
+```bash
+# DB 연결 확인 (parable_mall 전용 유저로)
+DATABASE_URL="postgresql://parable_app:<PW>@34.22.100.7:5432/parable_mall?schema=public&sslmode=require" \
+  node node_modules/prisma/build/index.js migrate status
+
+# 새로 만든 마이그레이션 적용
+DATABASE_URL="..." node node_modules/prisma/build/index.js migrate deploy
+
+# 시드 재실행 (기존 데이터 지우지 않음 — 중복 주의)
+DATABASE_URL="..." npx tsx scripts/seed.ts
+
+# Vercel 배포 상태 확인
+VERCEL_TOKEN=<token> npx vercel@latest ls parable-mall | head -5
+
+# Vercel env 추가 (preview 는 CLI 가 agent mode 감지해서 막힘 → REST API 사용)
+curl -X POST "https://api.vercel.com/v10/projects/prj_ig1hR0DhDc138OGcuvDHaSji0jAF/env" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+  -d '{"key":"KEY","value":"VAL","type":"encrypted","target":["preview"]}'
+```
+
+실제 비밀번호/토큰은 `.env.deploy.local` 에 있음 (로컬 전용, gitignore 적용). Cowork 샌드박스에서는 이 파일이 없으므로 DB 직접 접속 작업은 로컬에서 진행 권장.
 
 ---
 
@@ -224,6 +285,25 @@ Parable-ENT 자사 D2C 웹 쇼핑몰. 굿즈/콘텐츠/디지털 상품 판매.
 - **이유**: 사용자 요구사항("테스터블 환경이 있으면 그렇게") + 결제 버튼이 런타임에 동작하는 수준 확보
 - **TODO**: 상용 런칭 직전 실제 운영 키로 교체
 
+### 2026-04-20: Vercel 프로젝트 — `framework: nextjs` 수동 설정 필수
+
+- **결정**: `vercel projects add` 로 생성한 프로젝트는 `framework: null` 로 남아 빌드는 성공해도 모든 라우트 404. REST API `PATCH /v10/projects/{id}` 로 `framework: "nextjs"` 명시 후 재빌드.
+- **이유**: CLI 프로젝트 생성 경로는 framework auto-detect 가 동작 안 함. 대시보드 GUI 로 만들면 자동 감지.
+- **TODO**: 새로운 Vercel 프로젝트 CLI 생성 시 즉시 framework PATCH 루틴화.
+
+### 2026-04-20: SSO Protection 비활성화 (임시)
+
+- **결정**: Preview URL 자동 검증/사용자 확인 편의상 `ssoProtection: null` 로 꺼둠.
+- **이유**: agent 기반 curl 테스트 및 사용자 브라우저 확인 간소화.
+- **리스크**: Preview URL 이 인터넷 공개 상태. 크롤러/경쟁사가 찾으면 미완성 상태 노출.
+- **TODO**: 외부 공개 / 상용 전환 전 반드시 재활성화. `PATCH /v10/projects/{id}` with `ssoProtection: {deploymentType: 'all_except_custom_domains'}`
+
+### 2026-04-20: Header 로그인 상태 서버사이드 주입
+
+- **결정**: `ShopLayout` (서버 컴포넌트) 에서 `auth()` 호출 후 `isAuthenticated: boolean` 을 Header (클라이언트) 에 prop 으로 전달.
+- **이유**: `useSession()` + `SessionProvider` 방식은 SessionProvider 추가 + 클라이언트 fetch 필요. 현 구조에 최소 침습. DB 세션 전략이라 auth() 호출은 1 쿼리로 값싸다.
+- **대안**: next-auth `SessionProvider` + `useSession()` (클라이언트 hydration 시 점프 발생), 쿠키 직접 검사 (세션 만료 반영 늦음)
+
 ---
 
 ## TODO (Phase별)
@@ -235,3 +315,6 @@ Parable-ENT 자사 D2C 웹 쇼핑몰. 굿즈/콘텐츠/디지털 상품 판매.
 - [x] Phase 4: 배송 & 사후
 - [x] Phase 5: 마케팅 & 운영
 - [x] Phase 6: 품질 & 배포
+- [x] Phase 7: Vercel 첫 Preview 배포 + 시드 데이터 + UI/UX 1차 정리 (2026-04-20)
+- [ ] Phase 8: UI/UX 잔여 (체크아웃 sticky, 장바구니 터치 타겟, empty state 통일, 별점 접근성, 푸터 placeholder 교체, 회원가입 도움말)
+- [ ] Phase 9: 상용 전환 (DB 분리 / VPC / SSO 재활성화 / 프로덕션 도메인 / 실 OAuth 키 / PG 운영 키 / main 머지)
