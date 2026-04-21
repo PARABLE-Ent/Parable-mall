@@ -1,6 +1,24 @@
 # Parable Mall - 프로젝트 컨벤션 & 결정 로그
 
-## ✅ 현재 상태: Vercel Preview 배포 완료 + UI/UX 1차 정리 (2026-04-20)
+## ✅ 현재 상태: Vercel Preview 배포 + UI/UX 1차 정리 + 관리자 핸드오프 준비 완료 (2026-04-20)
+
+### 🎯 관리자 리뷰 핸드오프 (최신)
+
+**리뷰어에게 전달할 문서**: [`docs/ADMIN-HANDOFF.md`](./docs/ADMIN-HANDOFF.md)
+
+- 로그인: `/admin/login` — `admin@parable-ent.com` / `Admin1234!`
+- 관리자 기능 상태 (✅ 작동 / 🚧 Phase 2):
+  - ✅ 대시보드 KPI / 최근 주문
+  - ✅ 주문 상태 변경 + 배송등록(택배사/운송장)
+  - ✅ 리뷰 공개·비공개 토글
+  - ✅ Q&A 답변
+  - ✅ 쿠폰 생성 (정액/정률)
+  - ✅ 상품 판매상태 토글(노출/숨김) — 새로 추가 (`PATCH /api/admin/products/[id]`)
+  - ✅ 감사 로그
+  - 🚧 상품 신규 등록 / 상세 편집 UI — API 는 있으나 UI 미구현, 버튼 disabled 처리
+  - 🚧 `/admin/settings` 페이지 — 사이드바에서 제거 (라우트 없음)
+
+**멱등 관리자 보장**: `pnpm db:ensure-admin` (새 스크립트 `scripts/ensure-admin.ts`). DB 초기화나 비번 분실 시 바로 복구.
 
 > **다음 세션 (Cowork 샌드박스 / 로컬 Claude Code) 에게**: 배포는 돌아가고 있음. 상세 진행 상태는 [`docs/DEPLOY-HANDOFF.md`](./docs/DEPLOY-HANDOFF.md) 참조. 아래는 30초 요약.
 
@@ -224,97 +242,4 @@ Parable-ENT 자사 D2C 웹 쇼핑몰. 굿즈/콘텐츠/디지털 상품 판매.
 ### 2025-04-15: Prisma 버전
 
 - **결정**: Prisma 6.x 사용 (7.x 대신)
-- **이유**: Prisma 7은 datasource url 설정 방식이 근본적으로 변경됨(prisma.config.ts 필수). 아직 생태계 안정화 미비. 6.x는 전통적인 schema.prisma 설정 방식 지원
-- **대안**: Prisma 7 (breaking change가 많아 초기 개발 안정성 저하)
-
-### 2025-04-15: 비즈니스 정책
-
-- **결정**: 합리적 기본값 적용 (위 비즈니스 정책 섹션 참조)
-- **이유**: 개별 확인 없이 일반적인 쇼핑몰 기준으로 설정, 추후 조정 가능
-
-### 2025-04-15: 세션 전략
-
-- **결정**: 고객은 DB 세션 (NextAuth), 관리자는 Redis 세션
-- **이유**: 고객 세션은 결제/주문 시 서버사이드 검증이 중요하므로 DB 세션. 관리자는 짧은 TTL(8h)로 Redis에 관리하여 즉시 무효화 가능
-- **대안**: JWT (stateless이나 즉시 무효화 불가)
-
-### 2025-04-15: 인증 분리
-
-- **결정**: 고객 인증(NextAuth)과 관리자 인증(Redis 세션) 완전 분리
-- **이유**: 보안 경계 분리. 관리자는 소셜 로그인 없이 이메일/비밀번호만. 별도 AdminUser 테이블 사용
-- **대안**: 단일 User 테이블에 role로 구분 (보안 경계가 모호해짐)
-
-### 2025-04-16: 배포 인프라
-
-- **결정**: Vercel (프론트/API) + 기존 GCP Cloud SQL (DB) + Upstash Redis (캐시/세션)
-- **이유**: Vercel은 Next.js 네이티브 지원, Cloud SQL은 기존 인프라 활용으로 추가 비용 $0, Upstash는 HTTP 기반으로 Serverless 환경과 호환 최적
-- **대안 검토**: Firebase Hosting (SSR Cold Start 문제로 부적합), Neon/Supabase (해외 서버, 데이터 국내 보관 이슈)
-
-### 2025-04-16: Redis 클라이언트
-
-- **결정**: ioredis → @upstash/redis 전환
-- **이유**: Vercel Serverless Functions에서 TCP 기반 ioredis는 연결 풀 문제 발생. Upstash는 HTTP 기반으로 Serverless 환경에 최적
-- **대안**: ioredis 유지 (Vercel에서 연결 제한/타임아웃 빈발)
-
-### 2026-04-20: DB 인스턴스 공유 (임시)
-
-- **결정**: 기존 Virdy Cloud SQL 인스턴스(`virdy-parable:asia-northeast3:virdy-v2-db`) 에 신규 DB `parable_mall` + 전용 유저 `parable_app` 을 생성하여 사용
-- **이유**: 개발 프리뷰 단계에서 신규 인스턴스 비용 발생 회피. 같은 인스턴스 내 DB 격리로 데이터는 분리됨
-- **리스크**: 인스턴스 리소스 공유 → Virdy 트래픽이 Parable Mall 지연에 영향 가능. 한쪽 인스턴스 장애 시 동시 다운
-- **TODO**: 프로덕션 런칭 전 Parable 전용 Cloud SQL 인스턴스로 분리 (옵션 B)
-- **대안**: 처음부터 별도 인스턴스 생성 (월 ~$8, 완전 격리)
-
-### 2026-04-20: R2 키 재사용
-
-- **결정**: Virdy 프로젝트에서 쓰던 R2 S3 호환 키를 그대로 재사용. 버킷만 `parable-mall` 신규 생성
-- **이유**: 계정 전역 권한으로 발급된 키라 추가 비용/설정 없이 즉시 사용 가능
-- **전제**: 해당 키의 권한이 "Apply to all buckets in this account" 여야 함. 특정 버킷 한정이면 신규 발급 필요
-- **TODO**: 장기적으로 Parable 전용 Admin Read/Write 토큰 별도 발급해서 키 스코프 분리
-
-### 2026-04-20: Public IP + 0.0.0.0/0 허용 (임시)
-
-- **결정**: Vercel 서버리스의 고정 egress IP 부재로 Cloud SQL 의 Authorized Networks 를 `0.0.0.0/0` 으로 임시 허용
-- **이유**: 개발 프리뷰 빠른 검증. VPC Connector 설정 시간 절약
-- **리스크**: 강력한 비밀번호 + SSL 강제에 의존. 비밀번호 유출 시 인터넷에서 직접 공격 가능
-- **TODO**: 프로덕션 전환 전 Serverless VPC Access Connector + Private IP 로 교체. Cloud SQL Auth Proxy 병행 검토
-- **대안**: Private Service Connect (초기 설정 복잡)
-
-### 2026-04-20: PG 키 — 샌드박스 테스트 키
-
-- **결정**: 배포 env 에 토스/카카오/네이버페이 공식 샌드박스 테스트 키 주입
-- **이유**: 사용자 요구사항("테스터블 환경이 있으면 그렇게") + 결제 버튼이 런타임에 동작하는 수준 확보
-- **TODO**: 상용 런칭 직전 실제 운영 키로 교체
-
-### 2026-04-20: Vercel 프로젝트 — `framework: nextjs` 수동 설정 필수
-
-- **결정**: `vercel projects add` 로 생성한 프로젝트는 `framework: null` 로 남아 빌드는 성공해도 모든 라우트 404. REST API `PATCH /v10/projects/{id}` 로 `framework: "nextjs"` 명시 후 재빌드.
-- **이유**: CLI 프로젝트 생성 경로는 framework auto-detect 가 동작 안 함. 대시보드 GUI 로 만들면 자동 감지.
-- **TODO**: 새로운 Vercel 프로젝트 CLI 생성 시 즉시 framework PATCH 루틴화.
-
-### 2026-04-20: SSO Protection 비활성화 (임시)
-
-- **결정**: Preview URL 자동 검증/사용자 확인 편의상 `ssoProtection: null` 로 꺼둠.
-- **이유**: agent 기반 curl 테스트 및 사용자 브라우저 확인 간소화.
-- **리스크**: Preview URL 이 인터넷 공개 상태. 크롤러/경쟁사가 찾으면 미완성 상태 노출.
-- **TODO**: 외부 공개 / 상용 전환 전 반드시 재활성화. `PATCH /v10/projects/{id}` with `ssoProtection: {deploymentType: 'all_except_custom_domains'}`
-
-### 2026-04-20: Header 로그인 상태 서버사이드 주입
-
-- **결정**: `ShopLayout` (서버 컴포넌트) 에서 `auth()` 호출 후 `isAuthenticated: boolean` 을 Header (클라이언트) 에 prop 으로 전달.
-- **이유**: `useSession()` + `SessionProvider` 방식은 SessionProvider 추가 + 클라이언트 fetch 필요. 현 구조에 최소 침습. DB 세션 전략이라 auth() 호출은 1 쿼리로 값싸다.
-- **대안**: next-auth `SessionProvider` + `useSession()` (클라이언트 hydration 시 점프 발생), 쿠키 직접 검사 (세션 만료 반영 늦음)
-
----
-
-## TODO (Phase별)
-
-- [x] Phase 0: 부트스트랩
-- [x] Phase 1: 인프라 & 인증
-- [x] Phase 2: 카탈로그
-- [x] Phase 3: 장바구니 & 주문
-- [x] Phase 4: 배송 & 사후
-- [x] Phase 5: 마케팅 & 운영
-- [x] Phase 6: 품질 & 배포
-- [x] Phase 7: Vercel 첫 Preview 배포 + 시드 데이터 + UI/UX 1차 정리 (2026-04-20)
-- [ ] Phase 8: UI/UX 잔여 (체크아웃 sticky, 장바구니 터치 타겟, empty state 통일, 별점 접근성, 푸터 placeholder 교체, 회원가입 도움말)
-- [ ] Phase 9: 상용 전환 (DB 분리 / VPC / SSO 재활성화 / 프로덕션 도메인 / 실 OAuth 키 / PG 운영 키 / main 머지)
+- **이유**: Prisma 7은 datasource url 설정 방식이 근본적으로 변경됨(prisma.config.ts 필수). 아직 생태계 안정화 미비. 6.x는 전통적인 schema.prisma �
