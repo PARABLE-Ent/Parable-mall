@@ -148,7 +148,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="grid gap-8 md:grid-cols-2">
           {/* 이미지 갤러리 */}
           <div className="space-y-4">
-            {primaryImage && (
+            {primaryImage ? (
               <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
                 <Image
                   src={primaryImage.url}
@@ -158,6 +158,14 @@ export default async function ProductDetailPage({ params }: Props) {
                   priority
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
+              </div>
+            ) : (
+              <div
+                className="bg-muted text-muted-foreground/40 flex aspect-square items-center justify-center rounded-lg text-6xl"
+                aria-label="상품 이미지 준비 중"
+                role="img"
+              >
+                📷
               </div>
             )}
             {product.images.length > 1 && (

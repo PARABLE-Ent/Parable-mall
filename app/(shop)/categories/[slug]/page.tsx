@@ -65,6 +65,19 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="container mx-auto px-4 py-8">
+        {/* 브레드크럼 */}
+        <nav className="text-muted-foreground mb-4 text-sm" aria-label="Breadcrumb">
+          <ol className="flex items-center gap-1">
+            <li>
+              <Link href="/" className="hover:text-foreground">
+                홈
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li className="text-foreground">{category.name}</li>
+          </ol>
+        </nav>
+
         <h1 className="text-2xl font-bold">{category.name}</h1>
 
         {/* 하위 카테고리 */}
@@ -94,6 +107,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               <Link
                 key={opt.value}
                 href={`/categories/${slug}?sort=${opt.value}`}
+                aria-current={sort === opt.value ? 'page' : undefined}
                 className={`px-2 py-1 ${sort === opt.value ? 'text-primary font-bold' : 'text-muted-foreground'}`}
               >
                 {opt.label}
@@ -102,64 +116,93 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        {/* 상품 그리드 */}
-        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.map(
-            (product: {
-              id: string;
-              slug: string;
-              name: string;
-              images: { url: string }[];
-              salePrice: number | null;
-              basePrice: number;
-              status: string;
-              category: { name: string };
-              _count: { reviews: number };
-            }) => {
-              const image = product.images[0];
-              const displayPrice = product.salePrice ?? product.basePrice;
+        {/* 상품 그리드 (빈 상태 대응) */}
+        {products.length === 0 ? (
+          <div className="mt-10 rounded-lg border border-dashed py-16 text-center">
+            <p className="text-muted-foreground">해당 카테고리에 상품이 아직 없습니다.</p>
+            <Link
+              href="/"
+              className="text-primary mt-2 inline-block text-sm underline-offset-4 hover:underline"
+            >
+              다른 상품 둘러보기
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {products.map(
+              (product: {
+                id: string;
+                slug: string;
+                name: string;
+                images: { url: string }[];
+                salePrice: number | null;
+                basePrice: number;
+                status: string;
+                category: { name: string };
+                _count: { reviews: number };
+              }) => {
+                const image = product.images[0];
+                const displayPrice = product.salePrice ?? product.basePrice;
+                const isOnSale =
+                  product.salePrice !== null && product.salePrice < product.basePrice;
+                const discountRate = isOnSale
+                  ? Math.round((1 - product.salePrice! / product.basePrice) * 100)
+                  : 0;
 
-              return (
-                <Link key={product.id} href={`/products/${product.slug}`} className="group">
-                  <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
-                    {image && (
-                      <Image
-                        src={image.url}
-                        alt={product.name}
-                        fill
-                        className="object-cover transition-transform group-hover:scale-105"
-                        loading="lazy"
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      />
-                    )}
-                    {product.status === 'SOLDOUT' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                        <span className="font-bold text-white">품절</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-muted-foreground text-xs">{product.category.name}</p>
-                    <p className="mt-0.5 text-sm leading-tight font-medium">{product.name}</p>
-                    <div className="mt-1 flex items-baseline gap-1">
-                      <span className="font-bold">{displayPrice.toLocaleString('ko-KR')}원</span>
-                      {product.salePrice !== null && product.salePrice < product.basePrice && (
-                        <span className="text-muted-foreground text-xs line-through">
-                          {product.basePrice.toLocaleString('ko-KR')}원
+                return (
+                  <Link key={product.id} href={`/products/${product.slug}`} className="group">
+                    <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
+                      {image ? (
+                        <Image
+                          src={image.url}
+                          alt={product.name}
+                          fill
+                          className="object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
+                          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      ) : (
+                        <div
+                          className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl"
+                          aria-hidden="true"
+                        >
+                          📦
+                        </div>
+                      )}
+                      {isOnSale && (
+                        <span className="absolute top-2 left-2 rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                          {discountRate}%
                         </span>
                       )}
+                      {product.status === 'SOLDOUT' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                          <span className="font-bold text-white">품절</span>
+                        </div>
+                      )}
                     </div>
-                    {product._count.reviews > 0 && (
-                      <p className="text-muted-foreground mt-0.5 text-xs">
-                        리뷰 {product._count.reviews}
-                      </p>
-                    )}
-                  </div>
-                </Link>
-              );
-            },
-          )}
-        </div>
+                    <div className="mt-2">
+                      <p className="text-muted-foreground text-xs">{product.category.name}</p>
+                      <p className="mt-0.5 text-sm leading-tight font-medium">{product.name}</p>
+                      <div className="mt-1 flex items-baseline gap-1">
+                        <span className="font-bold">{displayPrice.toLocaleString('ko-KR')}원</span>
+                        {product.salePrice !== null && product.salePrice < product.basePrice && (
+                          <span className="text-muted-foreground text-xs line-through">
+                            {product.basePrice.toLocaleString('ko-KR')}원
+                          </span>
+                        )}
+                      </div>
+                      {product._count.reviews > 0 && (
+                        <p className="text-muted-foreground mt-0.5 text-xs">
+                          리뷰 {product._count.reviews}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                );
+              },
+            )}
+          </div>
+        )}
 
         {/* 페이지네이션 */}
         {pagination.totalPages > 1 && (

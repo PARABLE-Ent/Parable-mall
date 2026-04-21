@@ -336,6 +336,7 @@ export default function CheckoutPage() {
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
                     placeholder="이름"
+                    autoComplete="shipping name"
                     required
                   />
                 </div>
@@ -343,9 +344,12 @@ export default function CheckoutPage() {
                   <Label htmlFor="recipient-phone">연락처</Label>
                   <Input
                     id="recipient-phone"
+                    type="tel"
                     value={recipientPhone}
                     onChange={(e) => setRecipientPhone(e.target.value)}
                     placeholder="010-0000-0000"
+                    autoComplete="tel"
+                    inputMode="tel"
                     required
                   />
                 </div>
@@ -359,6 +363,8 @@ export default function CheckoutPage() {
                     value={zipCode}
                     onChange={(e) => setZipCode(e.target.value)}
                     placeholder="12345"
+                    autoComplete="shipping postal-code"
+                    inputMode="numeric"
                     required
                   />
                 </div>
@@ -369,6 +375,7 @@ export default function CheckoutPage() {
                     value={address1}
                     onChange={(e) => setAddress1(e.target.value)}
                     placeholder="주소"
+                    autoComplete="shipping street-address"
                     required
                   />
                 </div>
@@ -381,6 +388,7 @@ export default function CheckoutPage() {
                   value={address2}
                   onChange={(e) => setAddress2(e.target.value)}
                   placeholder="동/호수"
+                  autoComplete="shipping address-line2"
                 />
               </div>
 
@@ -466,9 +474,9 @@ export default function CheckoutPage() {
           </Card>
         </div>
 
-        {/* 우측: 결제 요약 */}
+        {/* 우측: 결제 요약 — 데스크톱만 sticky, 모바일은 스크롤 자연 흐름 (입력칸 가림 방지) */}
         <div>
-          <Card className="sticky top-20">
+          <Card className="lg:sticky lg:top-20">
             <CardHeader>
               <CardTitle className="text-lg">결제 정보</CardTitle>
             </CardHeader>
@@ -507,7 +515,14 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error && (
+                <div
+                  role="alert"
+                  className="border-destructive/40 bg-destructive/5 text-destructive rounded-md border px-3 py-2 text-sm"
+                >
+                  {error}
+                </div>
+              )}
 
               <Button
                 className="w-full"

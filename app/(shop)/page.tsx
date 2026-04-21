@@ -76,7 +76,10 @@ export default async function HomePage() {
                 href={`/categories/${cat.slug}`}
                 className="group bg-background hover:border-foreground/20 hover:bg-muted flex flex-col items-center rounded-lg border p-4 text-center transition-colors"
               >
-                <div className="bg-muted group-hover:bg-foreground/10 flex h-12 w-12 items-center justify-center rounded-full text-2xl">
+                <div
+                  className="bg-muted group-hover:bg-foreground/10 flex h-12 w-12 items-center justify-center rounded-full text-2xl"
+                  aria-hidden="true"
+                >
                   {cat.name === '의류' && '👕'}
                   {cat.name === '액세서리' && '💍'}
                   {cat.name === '앨범/음반' && '💿'}
@@ -97,12 +100,10 @@ export default async function HomePage() {
             <h2 className="text-2xl font-bold">신상품</h2>
             <p className="text-muted-foreground mt-1 text-sm">새로 입고된 상품들을 확인하세요</p>
           </div>
-          <Link
-            href="/categories/clothing"
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm font-medium"
-          >
-            전체보기 <ArrowRight className="h-4 w-4" />
-          </Link>
+          {/*
+            TODO: 전용 "신상품" 아카이브 라우트(/products?sort=newest 또는 /new) 생성 전까지
+            엉뚱한 카테고리(clothing)로 빠지는 링크는 제거. 하단 카드 자체가 네비게이션 역할 수행.
+          */}
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -134,7 +135,10 @@ export default async function HomePage() {
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl">
+                      <div
+                        className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl"
+                        aria-hidden="true"
+                      >
                         📦
                       </div>
                     )}
@@ -212,30 +216,57 @@ export default async function HomePage() {
                 images: { url: string }[];
                 salePrice: number | null;
                 basePrice: number;
-              }) => (
-                <Link key={product.id} href={`/products/${product.slug}`} className="group">
-                  <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
-                    {product.images[0] ? (
-                      <Image
-                        src={product.images[0].url}
-                        alt={product.name}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl">
-                        ⭐
+              }) => {
+                const displayPrice = product.salePrice ?? product.basePrice;
+                const isOnSale =
+                  product.salePrice !== null && product.salePrice < product.basePrice;
+                const discountRate = isOnSale
+                  ? Math.round((1 - product.salePrice! / product.basePrice) * 100)
+                  : 0;
+
+                return (
+                  <Link key={product.id} href={`/products/${product.slug}`} className="group">
+                    <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0].url}
+                          alt={product.name}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div
+                          className="text-muted-foreground/30 flex h-full items-center justify-center text-4xl"
+                          aria-hidden="true"
+                        >
+                          ⭐
+                        </div>
+                      )}
+                      {isOnSale && (
+                        <span className="absolute top-2 left-2 rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                          {discountRate}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <p className="line-clamp-2 text-sm font-medium">{product.name}</p>
+                      <div className="mt-1 flex items-baseline gap-1.5">
+                        {isOnSale && (
+                          <span className="text-sm font-bold text-red-500">{discountRate}%</span>
+                        )}
+                        <span className="text-sm font-bold">
+                          {displayPrice.toLocaleString('ko-KR')}원
+                        </span>
+                        {isOnSale && (
+                          <span className="text-muted-foreground text-xs line-through">
+                            {product.basePrice.toLocaleString('ko-KR')}원
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="mt-3">
-                    <p className="line-clamp-2 text-sm font-medium">{product.name}</p>
-                    <p className="mt-1 text-sm font-bold">
-                      {(product.salePrice ?? product.basePrice).toLocaleString('ko-KR')}원
-                    </p>
-                  </div>
-                </Link>
-              ),
+                    </div>
+                  </Link>
+                );
+              },
             )}
           </div>
         </section>

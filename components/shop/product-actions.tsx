@@ -124,11 +124,13 @@ export function ProductActions({
       });
 
       if (!res.ok) {
-        const err = await res.json();
         if (res.status === 401) {
-          router.push('/login');
+          // 로그인 후 현재 상품 페이지로 복귀할 수 있도록 callbackUrl 전달
+          const callback = encodeURIComponent(window.location.pathname);
+          router.push(`/login?callbackUrl=${callback}`);
           return;
         }
+        const err = await res.json();
         throw new Error(err.error ?? '장바구니 추가에 실패했습니다.');
       }
 
@@ -163,7 +165,8 @@ export function ProductActions({
 
       if (!res.ok) {
         if (res.status === 401) {
-          router.push('/login');
+          // 로그인 후 체크아웃으로 바로 연결
+          router.push('/login?callbackUrl=%2Fcheckout');
           return;
         }
         const err = await res.json();
@@ -233,16 +236,18 @@ export function ProductActions({
           <button
             onClick={() => handleQuantityChange(-1)}
             disabled={quantity <= 1}
-            className="rounded-md border p-2 disabled:opacity-50"
+            className="hover:bg-muted inline-flex h-11 w-11 items-center justify-center rounded-md border disabled:opacity-50"
             aria-label="수량 감소"
           >
             <Minus className="h-4 w-4" />
           </button>
-          <span className="w-12 text-center font-medium">{quantity}</span>
+          <span className="w-12 text-center font-medium" aria-live="polite" aria-atomic="true">
+            {quantity}
+          </span>
           <button
             onClick={() => handleQuantityChange(1)}
             disabled={matchedSku ? quantity >= availableStock : false}
-            className="rounded-md border p-2 disabled:opacity-50"
+            className="hover:bg-muted inline-flex h-11 w-11 items-center justify-center rounded-md border disabled:opacity-50"
             aria-label="수량 증가"
           >
             <Plus className="h-4 w-4" />
@@ -271,9 +276,11 @@ export function ProductActions({
         </Button>
       ) : (
         <div className="flex gap-3">
+          {/* 장바구니 담기 = secondary, 바로 구매 = primary 로 hierarchy 조정 */}
           <Button
             className="flex-1"
             size="lg"
+            variant="outline"
             onClick={() => void handleAddToCart()}
             disabled={loading}
           >
@@ -285,7 +292,7 @@ export function ProductActions({
             장바구니 담기
           </Button>
           <Button
-            variant="outline"
+            className="flex-1"
             size="lg"
             onClick={() => void handleBuyNow()}
             disabled={loading}

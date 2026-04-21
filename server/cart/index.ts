@@ -28,7 +28,18 @@ export async function getCart(userId: string) {
           sku: {
             include: {
               product: {
-                select: { id: true, name: true, slug: true, status: true },
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  status: true,
+                  // 장바구니 썸네일용 대표 이미지 1장
+                  images: {
+                    where: { isPrimary: true },
+                    select: { url: true, alt: true },
+                    take: 1,
+                  },
+                },
               },
               optionValues: {
                 include: { optionValue: true },

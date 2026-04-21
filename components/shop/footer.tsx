@@ -1,5 +1,14 @@
 import Link from 'next/link';
 
+// 헤더와 동일한 카테고리 목록을 공유 — 불일치 방지
+const CATEGORY_LINKS = [
+  { href: '/categories/clothing', label: '의류' },
+  { href: '/categories/accessories', label: '액세서리' },
+  { href: '/categories/albums', label: '앨범/음반' },
+  { href: '/categories/photocards', label: '포토카드' },
+  { href: '/categories/lifestyle', label: '생활용품' },
+];
+
 const FOOTER_LINKS = {
   고객지원: [
     { href: '/about', label: '사업자 정보' },
@@ -10,11 +19,7 @@ const FOOTER_LINKS = {
     { href: '/privacy', label: '개인정보처리방침' },
     { href: '/refund', label: '환불/반품 정책' },
   ],
-  카테고리: [
-    { href: '/categories/clothing', label: '의류' },
-    { href: '/categories/accessories', label: '액세서리' },
-    { href: '/categories/albums', label: '앨범/음반' },
-  ],
+  카테고리: CATEGORY_LINKS,
 };
 
 export function Footer() {
@@ -48,11 +53,15 @@ export function Footer() {
           ))}
         </div>
 
-        {/* 하단 사업자 정보 */}
+        {/*
+          하단 사업자 정보
+          TODO(legal): 정식 오픈 전 대표자명/사업자번호/통신판매업신고/주소/대표전화를
+          실제 값으로 교체. 임시로는 "준비 중" 노출로 사용자 신뢰도 유지.
+        */}
         <div className="text-muted-foreground mt-8 border-t pt-6 text-xs">
-          <p>상호명: Parable-ENT | 대표: [대표자명] | 사업자등록번호: [000-00-00000]</p>
-          <p className="mt-1">통신판매업신고: [제0000-서울강남-0000호] | 주소: [사업장 주소]</p>
-          <p className="mt-1">고객센터: [전화번호] | 이메일: cs@parable-ent.com</p>
+          <p>상호명: Parable-ENT | 대표: 준비 중 | 사업자등록번호: 준비 중</p>
+          <p className="mt-1">통신판매업신고: 준비 중 | 주소: 준비 중</p>
+          <p className="mt-1">고객센터: 준비 중 | 이메일: cs@parable-ent.com</p>
           <p className="mt-3">
             &copy; {new Date().getFullYear()} Parable-ENT. All rights reserved.
           </p>

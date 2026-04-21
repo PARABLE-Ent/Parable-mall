@@ -76,7 +76,7 @@ export function Header({ isAuthenticated = false }: { isAuthenticated?: boolean 
           </button>
 
           {/* 로고 */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2" aria-label="Parable Mall 홈으로 이동">
             <span className="text-xl font-bold tracking-tight">Parable Mall</span>
           </Link>
 

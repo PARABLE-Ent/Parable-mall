@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { Minus, Plus, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -12,7 +14,11 @@ interface CartItem {
     id: string;
     skuCode: string;
     price: number;
-    product: { name: string; slug: string };
+    product: {
+      name: string;
+      slug: string;
+      images?: { url: string; alt: string | null }[];
+    };
     optionValues: Array<{
       optionValue: { value: string; productOption: { name: string } };
     }>;
@@ -52,7 +58,22 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-muted-foreground">장바구니를 불러오는 중...</p>
+        <h1 className="text-2xl font-bold">장바구니</h1>
+        <div className="mt-6 grid gap-8 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex gap-4 rounded-lg border p-4">
+                <div className="bg-muted h-20 w-20 animate-pulse rounded-md" />
+                <div className="flex-1 space-y-2">
+                  <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
+                  <div className="bg-muted h-3 w-1/3 animate-pulse rounded" />
+                  <div className="bg-muted h-4 w-1/4 animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-muted h-48 animate-pulse rounded-lg" />
+        </div>
       </div>
     );
   }
@@ -75,7 +96,15 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold">장바구니</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">장바구니</h1>
+        <Link
+          href="/"
+          className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
+        >
+          계속 쇼핑하기
+        </Link>
+      </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
         {/* 상품 목록 */}
@@ -84,13 +113,41 @@ export default function CartPage() {
             const optionText = item.sku.optionValues
               .map((v) => `${v.optionValue.productOption.name}: ${v.optionValue.value}`)
               .join(' / ');
+            const availableStock = item.sku.inventory
+              ? item.sku.inventory.quantity - item.sku.inventory.reserved
+              : Infinity;
+            const thumb = item.sku.product.images?.[0];
 
             return (
               <div key={item.id} className="flex gap-4 rounded-lg border p-4">
-                <div className="flex-1">
+                {/* 썸네일 */}
+                <Link
+                  href={`/products/${item.sku.product.slug}`}
+                  className="bg-muted relative block h-20 w-20 shrink-0 overflow-hidden rounded-md"
+                  aria-label={`${item.sku.product.name} 상품 상세로 이동`}
+                >
+                  {thumb ? (
+                    <Image
+                      src={thumb.url}
+                      alt={thumb.alt ?? item.sku.product.name}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  ) : (
+                    <div
+                      className="text-muted-foreground/40 flex h-full items-center justify-center text-2xl"
+                      aria-hidden="true"
+                    >
+                      📦
+                    </div>
+                  )}
+                </Link>
+
+                <div className="min-w-0 flex-1">
                   <Link
                     href={`/products/${item.sku.product.slug}`}
-                    className="font-medium hover:underline"
+                    className="line-clamp-2 font-medium hover:underline"
                   >
                     {item.sku.product.name}
                   </Link>
@@ -99,23 +156,39 @@ export default function CartPage() {
                     {(item.sku.price * item.quantity).toLocaleString('ko-KR')}원
                   </p>
                 </div>
+
                 <div className="flex flex-col items-end gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <button
-                      className="rounded border px-2 py-1 text-sm"
+                      className="hover:bg-muted inline-flex h-10 w-10 items-center justify-center rounded-md border disabled:opacity-50"
                       onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                      disabled={item.quantity <= 1}
+                      aria-label={`${item.sku.product.name} 수량 감소`}
                     >
-                      -
+                      <Minus className="h-4 w-4" />
                     </button>
-                    <span className="w-8 text-center">{item.quantity}</span>
-                    <button
-                      className="rounded border px-2 py-1 text-sm"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    <span
+                      className="w-10 text-center text-sm font-medium"
+                      aria-live="polite"
+                      aria-atomic="true"
                     >
-                      +
+                      {item.quantity}
+                    </span>
+                    <button
+                      className="hover:bg-muted inline-flex h-10 w-10 items-center justify-center rounded-md border disabled:opacity-50"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      disabled={item.quantity >= availableStock}
+                      aria-label={`${item.sku.product.name} 수량 증가`}
+                    >
+                      <Plus className="h-4 w-4" />
                     </button>
                   </div>
-                  <button className="text-destructive text-sm" onClick={() => removeItem(item.id)}>
+                  <button
+                    className="text-muted-foreground hover:text-destructive inline-flex items-center gap-1 text-xs"
+                    onClick={() => removeItem(item.id)}
+                    aria-label={`${item.sku.product.name} 장바구니에서 제거`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                     삭제
                   </button>
                 </div>
