@@ -34,7 +34,7 @@ interface Pagination {
 }
 
 interface ProductsResponse {
-  data: Product[];
+  products: Product[];
   pagination: Pagination;
 }
 
@@ -73,7 +73,7 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/admin/products?${params.toString()}`);
       if (!res.ok) throw new Error('상품 목록을 불러올 수 없습니다.');
       const json = (await res.json()) as ProductsResponse;
-      setProducts(json.data);
+      setProducts(json.products);
       setPagination(json.pagination ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');

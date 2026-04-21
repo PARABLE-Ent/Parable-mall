@@ -32,7 +32,7 @@ interface Pagination {
 }
 
 interface OrdersResponse {
-  data: Order[];
+  orders: Order[];
   pagination: Pagination;
 }
 
@@ -90,7 +90,7 @@ export default function AdminOrdersPage() {
       const res = await fetch(`/api/admin/orders?${params.toString()}`);
       if (!res.ok) throw new Error('주문 목록을 불러올 수 없습니다.');
       const json = (await res.json()) as OrdersResponse;
-      setOrders(json.data);
+      setOrders(json.orders);
       setPagination(json.pagination ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
