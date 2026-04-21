@@ -59,6 +59,7 @@ export default function AdminReviewsPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchReviews = useCallback(async (currentPage: number) => {
     setLoading(true);
@@ -83,6 +84,7 @@ export default function AdminReviewsPage() {
 
   const handleToggleVisibility = async (reviewId: string, currentVisibility: boolean) => {
     setTogglingId(reviewId);
+    setActionError(null);
     try {
       const res = await adminFetch(`/api/admin/reviews/${reviewId}`, {
         method: 'PATCH',
@@ -94,7 +96,7 @@ export default function AdminReviewsPage() {
         prev.map((r) => (r.id === reviewId ? { ...r, isVisible: !currentVisibility } : r)),
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
+      setActionError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
       setTogglingId(null);
     }
@@ -150,6 +152,16 @@ export default function AdminReviewsPage() {
           새로고침
         </Button>
       </div>
+
+      {actionError && (
+        <div
+          role="alert"
+          className="border-destructive/40 bg-destructive/5 text-destructive flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

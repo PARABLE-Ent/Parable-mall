@@ -27,6 +27,8 @@ export default function AdminQnaPage() {
   const [answerText, setAnswerText] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [answerError, setAnswerError] = useState<string | null>(null);
+  const [answerInfo, setAnswerInfo] = useState<string | null>(null);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -50,8 +52,10 @@ export default function AdminQnaPage() {
   }, [fetchItems]);
 
   const submitAnswer = async (id: string) => {
+    setAnswerError(null);
+    setAnswerInfo(null);
     if (!answerText.trim()) {
-      alert('답변 내용을 입력해주세요.');
+      setAnswerError('답변 내용을 입력해주세요.');
       return;
     }
     setSubmitting(true);
@@ -64,9 +68,10 @@ export default function AdminQnaPage() {
       if (!res.ok) throw new Error('답변 등록에 실패했습니다.');
       setSelectedId(null);
       setAnswerText('');
+      setAnswerInfo('답변이 등록되었습니다.');
       void fetchItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
+      setAnswerError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
     }
@@ -89,6 +94,24 @@ export default function AdminQnaPage() {
             <p className="text-destructive">{error}</p>
           </CardContent>
         </Card>
+      )}
+
+      {answerError && (
+        <div
+          role="alert"
+          className="border-destructive/40 bg-destructive/5 text-destructive flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{answerError}</span>
+        </div>
+      )}
+      {answerInfo && (
+        <div
+          role="status"
+          className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+        >
+          {answerInfo}
+        </div>
       )}
 
       <Card>

@@ -79,6 +79,8 @@ export default function AdminOrdersPage() {
   const [carrier, setCarrier] = useState('');
   const [trackingNo, setTrackingNo] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionInfo, setActionInfo] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async (currentPage: number) => {
     setLoading(true);
@@ -102,6 +104,8 @@ export default function AdminOrdersPage() {
   }, [fetchOrders, page]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    setActionError(null);
+    setActionInfo(null);
     try {
       const res = await adminFetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PATCH',
@@ -109,15 +113,18 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error('상태 변경에 실패했습니다.');
+      setActionInfo('주문 상태가 변경되었습니다.');
       void fetchOrders(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
+      setActionError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     }
   };
 
   const handleShipmentSubmit = async (orderId: string) => {
+    setActionError(null);
+    setActionInfo(null);
     if (!carrier.trim() || !trackingNo.trim()) {
-      alert('택배사와 운송장번호를 입력해주세요.');
+      setActionError('택배사와 운송장번호를 입력해주세요.');
       return;
     }
     setSubmitting(true);
@@ -131,9 +138,10 @@ export default function AdminOrdersPage() {
       setShipmentOrderId(null);
       setCarrier('');
       setTrackingNo('');
+      setActionInfo('배송 정보가 등록되었습니다.');
       void fetchOrders(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
+      setActionError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
     }
@@ -189,6 +197,24 @@ export default function AdminOrdersPage() {
           새로고침
         </Button>
       </div>
+
+      {actionError && (
+        <div
+          role="alert"
+          className="border-destructive/40 bg-destructive/5 text-destructive flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
+      {actionInfo && (
+        <div
+          role="status"
+          className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+        >
+          {actionInfo}
+        </div>
+      )}
 
       <Card>
         <CardHeader>

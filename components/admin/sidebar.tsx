@@ -10,7 +10,6 @@ import {
   Users,
   Ticket,
   Star,
-  Settings,
   Menu,
   X,
   LogOut,
@@ -30,7 +29,7 @@ const SIDEBAR_LINKS = [
   { href: '/admin/reviews', label: '리뷰관리', icon: Star },
   { href: '/admin/qna', label: 'Q&A 관리', icon: MessageSquare },
   { href: '/admin/audit-logs', label: '감사 로그', icon: FileText },
-  { href: '/admin/settings', label: '설정', icon: Settings },
+  // TODO(Phase 2): 설정 페이지 (/admin/settings) 는 아직 구현되지 않아 메뉴에서 제외.
 ];
 
 export function AdminSidebar() {

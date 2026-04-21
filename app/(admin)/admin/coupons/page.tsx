@@ -65,6 +65,8 @@ export default function AdminCouponsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<CouponFormData>(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formInfo, setFormInfo] = useState<string | null>(null);
 
   const fetchCoupons = useCallback(async (currentPage: number) => {
     setLoading(true);
@@ -92,6 +94,8 @@ export default function AdminCouponsPage() {
   };
 
   const handleCreateCoupon = async () => {
+    setFormError(null);
+    setFormInfo(null);
     if (
       !form.name.trim() ||
       !form.code.trim() ||
@@ -99,7 +103,7 @@ export default function AdminCouponsPage() {
       !form.startDate ||
       !form.endDate
     ) {
-      alert('모든 필드를 입력해주세요.');
+      setFormError('모든 필드를 입력해주세요.');
       return;
     }
     setSubmitting(true);
@@ -119,9 +123,10 @@ export default function AdminCouponsPage() {
       if (!res.ok) throw new Error('쿠폰 생성에 실패했습니다.');
       setForm(initialForm);
       setShowForm(false);
+      setFormInfo('쿠폰이 생성되었습니다.');
       void fetchCoupons(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
+      setFormError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
     }
@@ -177,6 +182,24 @@ export default function AdminCouponsPage() {
           쿠폰 생성
         </Button>
       </div>
+
+      {formError && (
+        <div
+          role="alert"
+          className="border-destructive/40 bg-destructive/5 text-destructive flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{formError}</span>
+        </div>
+      )}
+      {formInfo && (
+        <div
+          role="status"
+          className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+        >
+          {formInfo}
+        </div>
+      )}
 
       {showForm && (
         <Card>

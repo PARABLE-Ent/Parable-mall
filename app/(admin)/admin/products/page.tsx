@@ -4,16 +4,18 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   Search,
   Plus,
-  Edit,
   AlertTriangle,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { adminFetch } from '@/lib/auth/admin-fetch';
 
 interface Product {
   id: string;
@@ -57,6 +59,10 @@ export default function AdminProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [toggleState, setToggleState] = useState<{
+    id: string | null;
+    error: string | null;
+  }>({ id: null, error: null });
 
   const fetchProducts = useCallback(async (currentPage: number, query: string) => {
     setLoading(true);
@@ -83,6 +89,40 @@ export default function AdminProductsPage() {
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
+  };
+
+  const toggleStatus = async (product: Product) => {
+    // ACTIVE <-> INACTIVE 토글만 지원. OUT_OF_STOCK/DRAFT 은 상태 변경 불가.
+    if (product.status !== 'ACTIVE' && product.status !== 'INACTIVE') {
+      setToggleState({
+        id: null,
+        error: `${STATUS_LABEL[product.status] ?? product.status} 상태는 UI 에서 토글할 수 없습니다. (Phase 2 에서 확장)`,
+      });
+      return;
+    }
+    const next = product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setToggleState({ id: product.id, error: null });
+    try {
+      const res = await adminFetch(`/api/admin/products/${product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: unknown };
+        throw new Error(
+          typeof body.error === 'string' ? body.error : '상품 상태 변경에 실패했습니다.',
+        );
+      }
+      // 로컬 상태 즉시 업데이트 (낙관적 UI)
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, status: next } : p)));
+      setToggleState({ id: null, error: null });
+    } catch (err) {
+      setToggleState({
+        id: null,
+        error: err instanceof Error ? err.message : '오류가 발생했습니다.',
+      });
+    }
   };
 
   if (loading) {
@@ -128,13 +168,33 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">상품 관리</h1>
-        <Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">상품 관리</h1>
+          <p className="text-muted-foreground mt-1 text-xs">
+            상품 등록 · 상세 편집은 현재 준비 중입니다. 판매 상태(판매중/비활성) 전환은 우측
+            버튼으로 가능합니다.
+          </p>
+        </div>
+        <Button
+          disabled
+          title="상품 등록 UI 는 Phase 2 에 제공됩니다. 현재는 시드 데이터로 운영 중."
+          aria-label="상품 등록 (Phase 2 예정)"
+        >
           <Plus className="mr-2 h-4 w-4" />
-          상품 등록
+          상품 등록 (준비 중)
         </Button>
       </div>
+
+      {toggleState.error && (
+        <div
+          role="alert"
+          className="border-destructive/40 bg-destructive/5 text-destructive flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{toggleState.error}</span>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -146,6 +206,7 @@ export default function AdminProductsPage() {
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10"
+                aria-label="상품명으로 검색"
               />
             </div>
           </div>
@@ -171,29 +232,52 @@ export default function AdminProductsPage() {
                     </td>
                   </tr>
                 ) : (
-                  products.map((product) => (
-                    <tr key={product.id} className="hover:bg-muted/50 border-b">
-                      <td className="px-4 py-3 font-medium">{product.name}</td>
-                      <td className="text-muted-foreground px-4 py-3">{product.category}</td>
-                      <td className="px-4 py-3 text-right">
-                        {product.basePrice.toLocaleString('ko-KR')}원
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[product.status] ?? 'bg-gray-100 text-gray-800'}`}
-                        >
-                          {STATUS_LABEL[product.status] ?? product.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">{product.stockCount}</td>
-                      <td className="px-4 py-3">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="mr-1 h-3 w-3" />
-                          수정
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
+                  products.map((product) => {
+                    const canToggle = product.status === 'ACTIVE' || product.status === 'INACTIVE';
+                    const pending = toggleState.id === product.id;
+                    return (
+                      <tr key={product.id} className="hover:bg-muted/50 border-b">
+                        <td className="px-4 py-3 font-medium">{product.name}</td>
+                        <td className="text-muted-foreground px-4 py-3">{product.category}</td>
+                        <td className="px-4 py-3 text-right">
+                          {product.basePrice.toLocaleString('ko-KR')}원
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[product.status] ?? 'bg-gray-100 text-gray-800'}`}
+                          >
+                            {STATUS_LABEL[product.status] ?? product.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">{product.stockCount}</td>
+                        <td className="px-4 py-3">
+                          <Button
+                            variant={product.status === 'ACTIVE' ? 'outline' : 'default'}
+                            size="sm"
+                            disabled={!canToggle || pending}
+                            onClick={() => void toggleStatus(product)}
+                            aria-label={
+                              product.status === 'ACTIVE'
+                                ? `${product.name} 비활성화`
+                                : `${product.name} 판매 재개`
+                            }
+                          >
+                            {product.status === 'ACTIVE' ? (
+                              <>
+                                <EyeOff className="mr-1 h-3 w-3" />
+                                숨김
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="mr-1 h-3 w-3" />
+                                노출
+                              </>
+                            )}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -211,6 +295,7 @@ export default function AdminProductsPage() {
                   size="sm"
                   disabled={pagination.page <= 1}
                   onClick={() => setPage((p) => p - 1)}
+                  aria-label="이전 페이지"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -222,6 +307,7 @@ export default function AdminProductsPage() {
                   size="sm"
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPage((p) => p + 1)}
+                  aria-label="다음 페이지"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
